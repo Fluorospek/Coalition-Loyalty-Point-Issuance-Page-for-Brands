@@ -22,9 +22,9 @@
 	];
 </script>
 
-<nav class="bg-white border-gray-200 dark:bg-blue-400">
+<nav class="bg-white border-gray-200 dark:bg-blue-400 w-full">
 	<div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-		<a href="/home" class="flex items-center space-x-3 rtl:space-x-reverse">
+		<a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
 			<img src="https://tsoc.dev/TSoC_Favicon.svg" class="h-8" alt="Flowbite Logo" />
 			<span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"
 				>BlockChain</span
@@ -36,7 +36,7 @@
 			>
 				{#each navs as { title, href }}
 					<li>
-						<a {href} class="nonactive active" class:active={$page.route.id === href}>{title}</a>
+						<a {href} class="nonactive" class:active={$page.route.id === href}>{title}</a>
 					</li>
 				{/each}
 			</ul>
