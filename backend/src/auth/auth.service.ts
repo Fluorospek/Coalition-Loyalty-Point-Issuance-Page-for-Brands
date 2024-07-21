@@ -27,8 +27,8 @@ export class AuthService {
         if(!validatePass){
             throw new NotFoundException('Password is incorrect');
         }
-
-        return {brandRepId:user.userId,token: this.jwtservice.sign({email})}
+        const payload={sub:user.userId,email:user.email}
+        return {brandRepId:user.userId,token: this.jwtservice.sign(payload)}
     }
 
     async register(RegisterBrandRepDto:RegisterBrandRepDto){
