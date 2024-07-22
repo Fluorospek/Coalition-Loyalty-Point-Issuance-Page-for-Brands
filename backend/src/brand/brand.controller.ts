@@ -21,7 +21,7 @@ export class BrandController {
   @ApiOperation({description:'Brand Representative sets up the Brand'})
   async setup(@Req() req, @Body() BrandDto:BrandDto){
     const userId=req.user.userId;
-    // const email=req.user.email;
-    return await this.brandService.setup(userId,BrandDto);
+    const email=req.user.email;
+    return await this.brandService.setup(userId,email,BrandDto);
   }
 }

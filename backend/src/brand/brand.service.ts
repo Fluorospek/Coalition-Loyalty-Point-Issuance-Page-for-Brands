@@ -24,8 +24,8 @@ export class BrandService {
         return {data:brand};
     }
 
-    async setup(userId:number, BrandDto:BrandDto){
-        const brand=this.findBrand(userId);
+    async setup(userId:number, email:string, BrandDto:BrandDto){
+        const brand=await this.findBrand(userId);
         if(brand){
             throw new ConflictException('Brand Already Setup');
         }
@@ -36,7 +36,8 @@ export class BrandService {
                 otherDetails:BrandDto.otherDetails,
                 user:{
                     connect:{
-                        userId:userId
+                        userId:userId,
+                        email:email
                     }
                 }
             }
