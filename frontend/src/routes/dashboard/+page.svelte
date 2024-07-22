@@ -1,7 +1,8 @@
 <script lang="ts">
 	import BrandSetup from '../../lib/dashboard/BrandSetup.svelte';
 	import Confirmation from '../../lib/dashboard/LoyaltyPointIssuance/Confirmation.svelte';
-
+	import LoyaltyPointManagement from '../../lib/dashboard/LoyaltyPointManagement.svelte';
+	import LoyaltyPointParameters from '../../lib/dashboard/LoyaltyPointIssuance/LoyaltyPointParameters.svelte';
 	let mainContent = BrandSetup;
 	let sidebarItems = [
 		{
@@ -10,11 +11,15 @@
 		},
 		{
 			title: 'Loyalty Point Issuance',
+			component: LoyaltyPointParameters
+		},
+		{
+			title: 'Loyalty Point Confirm',
 			component: Confirmation
 		},
 		{
 			title: 'Loyalty Point Management',
-			component: BrandSetup
+			component: LoyaltyPointManagement
 		},
 		{
 			title: 'Account Settings',
