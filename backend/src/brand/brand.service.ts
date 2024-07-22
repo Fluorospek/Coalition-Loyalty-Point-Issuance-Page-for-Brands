@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { BrandDto } from './dto/brand.dto';
 
@@ -6,12 +6,26 @@ import { BrandDto } from './dto/brand.dto';
 export class BrandService {
     constructor(private readonly dataservice: DatabaseService){}
 
-    async setup(userId:number, email:string, BrandDto:BrandDto){
+    async findBrand(userId:number){
         const brand=await this.dataservice.brand.findFirst({
             where:{
                 userId:userId
             }
         })
+        return brand;
+    }
+
+    async details(userId:number){
+        const brand=await this.findBrand(userId);
+        if(!brand){
+            throw new NotFoundException('Brand Not Found');
+        }
+        console.log(brand);
+        return {data:brand};
+    }
+
+    async setup(userId:number, BrandDto:BrandDto){
+        const brand=this.findBrand(userId);
         if(brand){
             throw new ConflictException('Brand Already Setup');
         }
@@ -22,8 +36,7 @@ export class BrandService {
                 otherDetails:BrandDto.otherDetails,
                 user:{
                     connect:{
-                        userId:userId,
-                        email:email
+                        userId:userId
                     }
                 }
             }
