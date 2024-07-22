@@ -1,3 +1,7 @@
+<script>
+	import {enhance} from '$app/forms';
+</script>
+
 <section class="bg-gray-50 dark:bg-gray-900">
 	<div class="flex flex-col items-center justify-center px-6 mt-10 mx-auto lg:py-0">
 		<!--
@@ -18,7 +22,7 @@
 				>
 					Welcome Back
 				</h1>
-				<form class="space-y-4 md:space-y-6" action="#">
+				<form class="space-y-4 md:space-y-6" method="POST" action="?/login" use:enhance>
 					<div>
 						<label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
 							>Your email</label
