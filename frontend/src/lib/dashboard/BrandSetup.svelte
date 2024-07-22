@@ -1,3 +1,6 @@
+<script lang="ts">
+</script>
+
 <section class="bg-white dark:bg-gray-900">
 	<div class="py-6 px-4 mx-auto max-w-screen-md">
 		<h2
@@ -5,7 +8,7 @@
 		>
 			Set Up Your Brand Profile
 		</h2>
-		<form action="#" class="space-y-4">
+		<form method="get" action="?/main" class="space-y-4">
 			<div>
 				<label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
 					>Brand Name</label
