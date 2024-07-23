@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { DatabaseService } from "src/database/database.service";
 import {Strategy, ExtractJwt} from "passport-jwt";
@@ -16,13 +16,15 @@ export class JwtStrategy extends PassportStrategy(Strategy){
         })
     }
 
-    async validate(payload: any ){
-        // const user = await this.databaseService.user.findFirst({
-        //     where:{
-        //         email:payload.email,
-        //     },
-        // });
-        // return user;
-        return {userId:payload.sub,email:payload.email};
-    }
+    async validate(payload: any) {
+        const user = await this.databaseService.user.findFirst({
+          where: {
+            email: payload.email,
+          },
+        });
+        if (!user) {
+          throw new UnauthorizedException('Login First');
+        }
+        return { userId: payload.sub, email: payload.email };
+      }
 }
