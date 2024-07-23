@@ -43,15 +43,12 @@ export class LoyaltyService {
       totalSupply: number;
     },
   ) {
-    const brand = await this.databaseservice.brand.findFirst({
-        where: {
-            userId: userId,
-        },
-        });
+    const brand = await this.brandService.findBrand(userId);
     if (!brand) {
       throw new NotFoundException('Brand Not Found');
     }
     const brandName = brand.brandName;
+    console.log(body);
     const bodyData = {
       data: {},
       decimals: 0,
@@ -91,22 +88,24 @@ export class LoyaltyService {
       satsPerToken: 1,
       splitable: true,
       symbol: body.symbol,
-      totalSupply: body.totalSupply,
+      totalSupply: Number(body.totalSupply),
+    };
+    console.log(body.neucron_token);
+    const headers = {
+        'Content-Type': 'application/json',
+      'Authorization': `${body.neucron_token}`,
+      'User-Agent': 'axios/1.7.2',
     };
     const res = await this.http
-      .post('https://dev.neucron.io/v1/stas/mint', bodyData, {
-        headers: { Authorization: body.neucron_token },
-      })
-      .pipe(
-        map((res) => res.data)
-      )
+      .post('https://dev.neucron.io/v1/stas/mint', bodyData,{headers})
+      .pipe(map((res) => res.data))
       .pipe(
         catchError((err) => {
-          throw new NotFoundException('Invalid credentials');
+          throw new NotFoundException(err);
         }),
       );
 
-      const details = await lastValueFrom(res);
-      return { details, status: 200};
+    const details = await lastValueFrom(res);
+    return { details, status: 200 };
   }
 }
