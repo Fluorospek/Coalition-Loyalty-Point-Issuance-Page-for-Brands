@@ -5,5 +5,8 @@
 </script>
 
 <Header />
-<slot />
+<div class="mt-16">
+	<slot />
+</div>
+
 <Footer />
