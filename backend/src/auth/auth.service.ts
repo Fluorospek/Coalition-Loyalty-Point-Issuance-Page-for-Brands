@@ -3,6 +3,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { RegisterBrandRepDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
+import { NeucronLoginDto } from './dto/neucron-login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';
 import { map,catchError } from 'rxjs/operators';
@@ -52,8 +53,8 @@ export class AuthService {
         return {brandRepId,token};
     }
 
-    async neucronLogin(LoginDto:LoginDto){
-        const {email,password}=LoginDto;
+    async neucronLogin(NeucronLoginDto:NeucronLoginDto){
+        const {email,password}=NeucronLoginDto;
         const res=this.http.post('https://dev.neucron.io/v1/auth/login',{email,password})
         .pipe(map((res)=>res.data?.data),map((data)=>data.access_token))
         .pipe(catchError((err)=>{throw new NotFoundException('Invalid credentials')}))

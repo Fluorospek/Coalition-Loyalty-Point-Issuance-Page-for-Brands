@@ -1,13 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsEmail, IsNotEmpty, IsString, Length } from "class-validator"
 
-export class LoginDto{
-    @ApiProperty({type:String,description:"Email of the user"})
+export class NeucronLoginDto{
+    @ApiProperty({type:String,description:"Neucron registered email of the user"})
     @IsEmail()
     @IsNotEmpty()
     email:string
 
-    @ApiProperty({type:String,description:"Password of the user"})
+    @ApiProperty({type:String,description:"Password of the Neucron wallet user"})
     @IsString()
     @Length(8,20)
     @IsNotEmpty()
