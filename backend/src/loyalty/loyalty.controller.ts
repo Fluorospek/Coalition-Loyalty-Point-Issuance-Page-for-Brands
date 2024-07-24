@@ -22,4 +22,12 @@ export class LoyaltyController {
     const email=req.user.email;
     return await this.loyaltyService.issue(userId,email,body);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('brand-tokens')
+  @ApiOperation({description:"Brand Representative can view if token has been issued"})
+  async brandTokens(@Req() req){
+    const userId=req.user.userId;
+    return await this.loyaltyService.brandToken(userId);
+  }
 }

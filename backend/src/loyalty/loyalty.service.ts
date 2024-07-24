@@ -13,6 +13,18 @@ export class LoyaltyService {
     private readonly brandService: BrandService,
   ) {}
 
+  async brandToken(userId: number) {
+    const tokenDetails=this.databaseservice.brandTokens.findFirst({
+      where:{
+        userId:userId
+      }
+    })
+    if(!tokenDetails){
+      throw new NotFoundException('Token Not Found');
+    }
+    return {tokenDetails, status: 200};
+  }
+
   async manage(token: string) {
     const res = await this.http
       .get('https://dev.neucron.io/v1/asset/tokens/list', {
@@ -106,6 +118,26 @@ export class LoyaltyService {
       );
 
     const details = await lastValueFrom(res);
+
+  try{
+    await this.databaseservice.brandTokens.create({
+      data:{
+        user:{
+          connect:{
+            userId:userId,
+            email:email
+          }
+        },
+        pointName:body.pointName,
+        symbol:body.symbol,
+
+        }
+      })
+  }
+  catch(err){
+    console.log('Token already exists');
+  }
+
     return { details, status: 200 };
   }
 }

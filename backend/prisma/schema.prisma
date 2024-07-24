@@ -13,22 +13,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  userId Int @id @default(autoincrement())
-  email String @unique
-  name String
-  password String
-  createdAt DateTime @default(now())
-  brands Brand[]
+model User {
+  userId      Int           @id @default(autoincrement())
+  email       String        @unique
+  name        String
+  password    String
+  createdAt   DateTime      @default(now())
+  brands      Brand[]
+  brandTokens BrandTokens[]
 }
 
-model Brand{
-  brandId Int @id @default(autoincrement())
-  userId Int
-  brandName String
-  description String?
+model Brand {
+  brandId      Int      @id @default(autoincrement())
+  userId       Int
+  brandName    String
+  description  String?
   otherDetails Json?
-  createdAt DateTime @default(now())
+  createdAt    DateTime @default(now())
 
-  user User @relation(fields:[userId], references: [userId])
+  user User @relation(fields: [userId], references: [userId])
+}
+
+model BrandTokens {
+  brandTokenId Int      @id @default(autoincrement())
+  userId       Int      @unique
+  pointName    String
+  symbol       String
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [userId])
 }
