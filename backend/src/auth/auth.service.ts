@@ -1,7 +1,7 @@
 import { ConflictException, Injectable,NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { RegisterBrandRepDto } from './dto/register.dto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';

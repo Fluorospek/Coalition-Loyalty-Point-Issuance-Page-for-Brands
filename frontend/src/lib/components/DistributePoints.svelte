@@ -1,3 +1,11 @@
+<script lang="ts">
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
+	function handleGoback() {
+		dispatch('goBackDistributePoints');
+	}
+</script>
+
 <section class="bg-white dark:bg-gray-900">
 	<div class="py-6 px-4 mx-auto max-w-screen-md">
 		<h2 class="mb-4 text-2xl tracking-tight font-bold text-center text-gray-900 dark:text-white">
@@ -47,6 +55,7 @@
 
 			<div class="w-full relative pt-6">
 				<button
+					on:click={handleGoback}
 					class="py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 					>Go Back</button
 				>
