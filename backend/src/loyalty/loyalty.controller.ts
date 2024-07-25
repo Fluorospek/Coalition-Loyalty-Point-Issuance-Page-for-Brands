@@ -2,6 +2,7 @@ import { Controller, UseGuards,Get,Body,Post,Req } from '@nestjs/common';
 import { LoyaltyService } from './loyalty.service';
 import { ApiOperation, ApiTags} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
+import { IssueDto } from './dto/issue.dto';
 
 @ApiTags('Loyalty')
 @Controller('loyalty')
@@ -18,10 +19,10 @@ export class LoyaltyController {
   @UseGuards(JwtAuthGuard)
   @Post('issue')
   @ApiOperation({description:"Brand Representative issues loyalty points",summary:"Issue Loyalty Points"})
-  async issue(@Req() req, @Body() body:{neucron_token:string,pointName:string, symbol:string, totalSupply:number}){
+  async issue(@Req() req, @Body() IssueDto:IssueDto){
     const userId=req.user.userId;
     const email=req.user.email;
-    return await this.loyaltyService.issue(userId,email,body);
+    return await this.loyaltyService.issue(userId,email,IssueDto);
   }
 
   @UseGuards(JwtAuthGuard)

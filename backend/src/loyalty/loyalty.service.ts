@@ -4,6 +4,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { map, catchError } from 'rxjs/operators';
 import { lastValueFrom } from 'rxjs';
 import { BrandService } from 'src/brand/brand.service';
+import { IssueDto } from './dto/issue.dto';
 
 @Injectable()
 export class LoyaltyService {
@@ -42,31 +43,26 @@ export class LoyaltyService {
 
     const tokens = await lastValueFrom(res);
 
-    return { tokens, status: 200 };
+    return { tokens, statusCode: 200 };
   }
 
   async issue(
     userId: number,
     email: string,
-    body: {
-      neucron_token: string;
-      pointName: string;
-      symbol: string;
-      totalSupply: number;
-    },
+    IssueDto:IssueDto,
   ) {
     const brand = await this.brandService.findBrand(userId);
     if (!brand) {
       throw new NotFoundException('Brand Not Found');
     }
     const brandName = brand.brandName;
-    console.log(body);
+    console.log(IssueDto);
     const bodyData = {
       data: {},
       decimals: 0,
       description: 'Coalition Loyalty Points',
       image: 'string',
-      name: body.pointName,
+      name: IssueDto.pointName,
       properties: {
         issuer: {
           email: email,
@@ -96,16 +92,16 @@ export class LoyaltyService {
           website: 'string',
         },
       },
-      protocolId: 'STAS',
+      protocolId: 'STAS-50',
       satsPerToken: 1,
       splitable: true,
-      symbol: body.symbol,
-      totalSupply: Number(body.totalSupply),
+      symbol: IssueDto.symbol,
+      totalSupply: Number(IssueDto.totalSupply),
     };
-    console.log(body.neucron_token);
+    console.log(IssueDto.neucron_token);
     const headers = {
         'Content-Type': 'application/json',
-      'Authorization': `${body.neucron_token}`,
+      'Authorization': `${IssueDto.neucron_token}`,
       'User-Agent': 'axios/1.7.2',
     };
     const res = await this.http
@@ -128,8 +124,8 @@ export class LoyaltyService {
             email:email
           }
         },
-        pointName:body.pointName,
-        symbol:body.symbol,
+        pointName:IssueDto.pointName,
+        symbol:IssueDto.symbol,
 
         }
       })
@@ -138,6 +134,6 @@ export class LoyaltyService {
     console.log('Token already exists');
   }
 
-    return { details, status: 200 };
+    return { details, statusCode: 200 };
   }
 }
