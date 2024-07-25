@@ -18,6 +18,10 @@
 		{
 			title: 'Dashboard',
 			href: '/dashboard'
+		},
+		{
+			title: 'Logout',
+			href: '/'
 		}
 	];
 </script>

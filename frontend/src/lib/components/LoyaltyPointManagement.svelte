@@ -1,6 +1,6 @@
 <script lang="ts">
 	//example
-
+	import { createEventDispatcher } from 'svelte';
 	import DistributePoints from './DistributePoints.svelte';
 	import Transactions from './Transactions.svelte';
 
@@ -13,6 +13,13 @@
 			totalPoints: 500
 		}
 	];
+	let dispatch = createEventDispatcher();
+	function handleDistribute() {
+		dispatch('distributePoints');
+	}
+	function handleTransactionBtn() {
+		dispatch('viewTransactions');
+	}
 </script>
 
 <section class="bg-white dark:bg-gray-900">
@@ -38,11 +45,13 @@
 					</div>
 					<div class="mt-4">
 						<button
+							on:click={handleDistribute}
 							class="py-2 mr-4 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 						>
 							Distibute Points
 						</button>
 						<button
+							on:click={handleTransactionBtn}
 							class="py-2 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 						>
 							View Transactions
