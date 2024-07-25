@@ -1,4 +1,4 @@
-import { ConflictException, Injectable,NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable,NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { RegisterBrandRepDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
@@ -31,37 +31,37 @@ export class AuthService {
 
         const validatePass=await bcrypt.compare(password,user.password);
         if(!validatePass){
-            throw new NotFoundException('Password is incorrect');
+            throw new ForbiddenException('Password is incorrect');
         }
         const payload={sub:user.userId,email:user.email}
-        return {brandRepId:user.userId,token: this.jwtservice.sign(payload)}
+        return {brandRepId:user.userId,token: this.jwtservice.sign(payload),statusCode: 200}
     }
 
     async register(RegisterBrandRepDto:RegisterBrandRepDto){
-        const user=this.dataservice.user.findFirst({
+        const user= await this.dataservice.user.findUnique({
             where:{
                 email:RegisterBrandRepDto.email
             }
         })
-        if(!user){
+        if(user){
             throw new ConflictException('User already exists');
         }
         const {email,password}=RegisterBrandRepDto;
         RegisterBrandRepDto.password=await bcrypt.hash(RegisterBrandRepDto.password,10);
         const res=await this.dataservice.user.create({data:RegisterBrandRepDto});
         const {brandRepId, token}=await this.login({email,password});
-        return {brandRepId,token};
+        return {brandRepId,token, statusCode:200};
     }
 
     async neucronLogin(NeucronLoginDto:NeucronLoginDto){
         const {email,password}=NeucronLoginDto;
         const res=this.http.post('https://dev.neucron.io/v1/auth/login',{email,password})
         .pipe(map((res)=>res.data?.data),map((data)=>data.access_token))
-        .pipe(catchError((err)=>{throw new NotFoundException('Invalid credentials')}))
+        .pipe(catchError((err)=>{throw new ForbiddenException('Invalid credentials')}))
 
-        const access_token=await lastValueFrom(res);
-        console.log(access_token);
+        const neucron_token=await lastValueFrom(res);
+        console.log(neucron_token);
 
-        return {access_token};
+        return {neucron_token, statusCode:200};
     }
 }

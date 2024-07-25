@@ -18,10 +18,6 @@
 			component: LoyaltyPointParameters
 		},
 		{
-			title: 'Loyalty Point Confirm',
-			component: Confirmation
-		},
-		{
 			title: 'Loyalty Point Management',
 			component: LoyaltyPointManagement
 		},
@@ -41,6 +37,12 @@
 	}
 	function handleDistributeGoBack() {
 		mainContent = LoyaltyPointManagement;
+	}
+	function handleLoyaltyParameter() {
+		mainContent = Confirmation;
+	}
+	function handleLoyaltyPointConfirmationBack() {
+		mainContent = LoyaltyPointParameters;
 	}
 </script>
 
@@ -76,6 +78,8 @@
 		on:goBackTransaction={handleTransactionGoBack}
 		on:goBackDistributePoints={handleDistributeGoBack}
 		on:distributePoints={handleViewDistributePoints}
+		on:loyaltypointparameters={handleLoyaltyParameter}
+		on:LoyaltyPointConfirmationGoBack={handleLoyaltyPointConfirmationBack}
 	/>
 </div>
 

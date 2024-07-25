@@ -21,7 +21,7 @@ export class BrandService {
             throw new NotFoundException('Brand Not Found');
         }
         console.log(brand);
-        return {data:brand};
+        return {data:brand, statusCode:200};
     }
 
     async setup(userId:number, email:string, BrandDto:BrandDto){
