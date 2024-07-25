@@ -14,7 +14,7 @@ export class LoyaltyService {
   ) {}
 
   async brandToken(userId: number) {
-    const tokenDetails=this.databaseservice.brandTokens.findFirst({
+    const tokenDetails=this.databaseservice.brandTokens.findUnique({
       where:{
         userId:userId
       }
@@ -22,7 +22,7 @@ export class LoyaltyService {
     if(!tokenDetails){
       throw new NotFoundException('Token Not Found');
     }
-    return {tokenDetails, status: 200};
+    return {tokenDetails, statusCode: 200};
   }
 
   async manage(token: string) {
