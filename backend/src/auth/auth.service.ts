@@ -3,11 +3,12 @@ import { DatabaseService } from 'src/database/database.service';
 import { RegisterBrandRepDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
-import { NeucronLoginDto } from './dto/neucron-login.dto';
+import { RelysiaLoginDto } from './dto/relysia-login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { HttpService } from '@nestjs/axios';
 import { map,catchError } from 'rxjs/operators';
 import { lastValueFrom } from 'rxjs';
+const RelysiaSDK=require('../../node_modules/@relysia/sdk/src/relysia-sdk');
 
 @Injectable()
 export class AuthService {
@@ -53,15 +54,18 @@ export class AuthService {
         return {brandRepId,token, statusCode:200};
     }
 
-    async neucronLogin(NeucronLoginDto:NeucronLoginDto){
-        const {email,password}=NeucronLoginDto;
-        const res=this.http.post('https://dev.neucron.io/v1/auth/login',{email,password})
-        .pipe(map((res)=>res.data?.data),map((data)=>data.access_token))
-        .pipe(catchError((err)=>{throw new ForbiddenException('Invalid credentials')}))
+    async relysiaLogin(RelysiaLoginDto:RelysiaLoginDto){
+        // const {email,password}=RelysiaLoginDto;
+        // const res=this.http.post('https://api.relysia.com/v1/auth',{email,password})
+        // .pipe(map((res)=>res.data?.data))
+        // .pipe(catchError((err)=>{throw new ForbiddenException('Invalid credentials')}))
 
-        const neucron_token=await lastValueFrom(res);
-        console.log(neucron_token);
+        // const access_token=await lastValueFrom(res);
+        // console.log(access_token);
 
-        return {neucron_token, statusCode:200};
+        // return {access_token, statusCode:200};
+        const relysia=new RelysiaSDK();
+        const res=await relysia.authentication.v1.auth({email:RelysiaLoginDto.email,password:RelysiaLoginDto.password});
+        return {res,statusCode:200};
     }
 }

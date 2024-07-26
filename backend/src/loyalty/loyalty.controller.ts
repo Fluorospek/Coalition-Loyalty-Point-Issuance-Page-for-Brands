@@ -3,6 +3,8 @@ import { LoyaltyService } from './loyalty.service';
 import { ApiOperation, ApiTags} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
 import { IssueDto } from './dto/issue.dto';
+import { ManageDto } from './dto/manage.dto';
+import { DistributeDto } from './dto/distribute.dto';
 
 @ApiTags('Loyalty')
 @Controller('loyalty')
@@ -12,8 +14,9 @@ export class LoyaltyController {
   @UseGuards(JwtAuthGuard)
   @Get('manage')
   @ApiOperation({description:"Brand Representative lists issued loyalty points",summary:"List Loyalty Points issued"})
-  async manage(@Body() body:{neucron_token:string}){
-    return await this.loyaltyService.manage(body.neucron_token);
+  async manage(@Req() req, @Body() ManageDto:ManageDto){
+    const userId=req.user.userId;
+    return await this.loyaltyService.manage(userId,ManageDto);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -31,5 +34,21 @@ export class LoyaltyController {
   async brandTokens(@Req() req){
     const userId=req.user.userId;
     return await this.loyaltyService.brandToken(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('distribute')
+  @ApiOperation({description:"Brand Representative distributes loyalty points",summary:"Distribute Loyalty Points"})
+  async distribute(@Req() req,@Body() DistributeDto:DistributeDto){
+    const userId=req.user.userId;
+    return await this.loyaltyService.distribute(userId,DistributeDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('transactions')
+  @ApiOperation({description:"Brand Representative views transaction history",summary:"View Transaction History"})
+  async transactions(@Req() req, @Body() ManageDto:ManageDto){
+    const userId=req.user.userId;
+    return await this.loyaltyService.transactions(userId,ManageDto);
   }
 }

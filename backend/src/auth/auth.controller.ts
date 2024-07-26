@@ -5,7 +5,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './auth.guard';
-import { NeucronLoginDto } from './dto/neucron-login.dto';
+import {  RelysiaLoginDto } from './dto/relysia-login.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -25,9 +25,9 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('neucron-login')
+  @Post('relysia-login')
   @ApiOperation({description:"Brand Representative logs into neucron wallet using email",summary:"Login to neucron wallet"})
-  async neucronLogin(@Body() NeucronLoginDto:NeucronLoginDto){
-    return await this.authService.neucronLogin(NeucronLoginDto);
+  async neucronLogin(@Body() RelysiaLoginDto:RelysiaLoginDto){
+    return await this.authService.relysiaLogin(RelysiaLoginDto);
   }
 }
