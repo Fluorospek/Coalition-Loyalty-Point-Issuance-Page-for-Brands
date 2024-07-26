@@ -1,5 +1,4 @@
 <script lang="ts">
-	export let userData;
 	import BrandSetup from '../../../lib/components/BrandSetup.svelte';
 	import LoyaltyPointParameters from '../../../lib/components/LoyaltyPointParameters.svelte';
 	import LoyaltyPointManagement from '../../../lib/components/LoyaltyPointManagement.svelte';

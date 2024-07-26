@@ -1,5 +1,32 @@
 <script>
-	import {enhance} from '$app/forms';
+	// import {enhance} from '$app/forms';
+	import { goto } from '$app/navigation';
+    import { isAuthenticated } from '../../../lib/api/api';
+    import axios from 'axios';
+
+    let email = '';
+    let password = '';
+    let error = '';
+
+    async function handleLogin() {
+        try {
+            const response = await axios.post('https://coalition-loyalty-point-issuance-page.onrender.com/auth/login', {
+                email,
+                password
+            });
+
+            const { token } = response.data;
+
+            // Save token to localStorage and update isAuthenticated state
+            localStorage.setItem('authToken', token);
+            isAuthenticated.set(true);
+
+            // Navigate to the dashboard page
+            goto('/dashboard');
+        } catch (err) {
+            error = err.response?.data?.message || 'Login failed';
+        }
+    }
 </script>
 
 <section class="bg-gray-50 dark:bg-gray-900">
@@ -22,7 +49,9 @@
 				>
 					Welcome Back
 				</h1>
-				<form class="space-y-4 md:space-y-6" method="POST" action="?/login" use:enhance>
+				<form class="space-y-4 md:space-y-6" on:submit|preventDefault={handleLogin}
+				    
+				>   <!-- method="POST" action="?/login" use:enhance -->
 					<div>
 						<label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
 							>Your email</label
@@ -31,6 +60,7 @@
 							type="email"
 							name="email"
 							id="email"
+							bind:value={email}
 							class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 							placeholder="name@gmail.com"
 							required=""
@@ -46,10 +76,14 @@
 							name="password"
 							id="password"
 							placeholder="••••••••"
+							bind:value={password}
 							class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 							required=""
 						/>
 					</div>
+					{#if error}
+                        <p style="color: red;">{error}</p>
+                    {/if}
 					<button
 						type="submit"
 						class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
