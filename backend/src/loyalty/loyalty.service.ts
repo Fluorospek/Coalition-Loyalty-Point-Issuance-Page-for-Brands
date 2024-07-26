@@ -179,22 +179,24 @@ export class LoyaltyService {
       throw new NotFoundException('Insufficient Balance');
     }
     const tokenId = tokenDetails.tokenId;
+    console.log(tokenId);
     const headers = {
       'Content-Type': 'application/json',
-      authToken: DistributeDto.access_token,
+      'authToken': DistributeDto.access_token,
     };
     const bodyData = {
       dataArray: [
         {
-          'to': DistributeDto.recipientAddress,
-          'amount': DistributeDto.amount,
-          'tokenId': tokenId,
+          to: DistributeDto.recipientAddress,
+          amount: DistributeDto.amount,
+          tokenId: tokenId,
         },
       ],
     };
-    const res= await lastValueFrom(
+    console.log(bodyData);
+    const res = await lastValueFrom(
       this.http
-        .post('https://api.relysia.com/v2/send', bodyData, { headers })
+        .post('https://api.relysia.com/v1/send', bodyData, { headers })
         .pipe(map((res) => res.data))
         .pipe(
           catchError((err) => {
@@ -202,12 +204,22 @@ export class LoyaltyService {
           }),
         ),
     );
-    if(res){
-      return {distributionId:res.data.txIds[0],statusCode:200}
-    }
-    else{
+    console.log(res);
+    if (res) {
+      return { distributionId: res.data.txIds[0], statusCode: 200 };
+    } else {
       throw new NotFoundException('Distribution Failed');
     }
+  }
+
+  filterHistoryByTokenId(data, token) {
+    const histories = data.data.histories;
+
+    const filteredHistories = histories.filter((history) => {
+      return history.to.some((toItem) => toItem.tokenId.endsWith(token));
+    });
+
+    return filteredHistories;
   }
 
   async transactions(userId: number, ManageDto: ManageDto) {
@@ -219,7 +231,7 @@ export class LoyaltyService {
     };
     const res = await lastValueFrom(
       this.http
-        .get('https://api.relysia.com/v2/transactions', { headers })
+        .get('https://api.relysia.com/v2/history', { headers })
         .pipe(map((res) => res.data))
         .pipe(
           catchError((err) => {
@@ -227,10 +239,7 @@ export class LoyaltyService {
           }),
         ),
     );
-    const transactions = res.data.histories.to;
-    const filteredTransactions = transactions.filter(
-      (transaction) => transaction.tokenId === tokenId,
-    );
+    const filteredTransactions = this.filterHistoryByTokenId(res, tokenId);
     return { transactions: filteredTransactions, statusCode: 200 };
   }
 }

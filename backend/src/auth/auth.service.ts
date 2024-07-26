@@ -66,6 +66,6 @@ export class AuthService {
         // return {access_token, statusCode:200};
         const relysia=new RelysiaSDK();
         const res=await relysia.authentication.v1.auth({email:RelysiaLoginDto.email,password:RelysiaLoginDto.password});
-        return {res,statusCode:200};
+        return {access_token:res.token,statusCode:200};
     }
 }
