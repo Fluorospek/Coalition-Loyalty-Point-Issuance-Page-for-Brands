@@ -1,32 +1,48 @@
 <script>
 	// import {enhance} from '$app/forms';
-	import { goto } from '$app/navigation';
-    import { isAuthenticated } from '../../../lib/api/api';
+	import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
     import axios from 'axios';
-
+    import { token, isAuthenticated } from '$lib/api/api';
     let email = '';
     let password = '';
     let error = '';
+    let loading = false;
 
-    async function handleLogin() {
+    async function handleLogin(event) {
+        event.preventDefault();
+        loading = true;
+        error = '';
+
         try {
             const response = await axios.post('https://coalition-loyalty-point-issuance-page.onrender.com/auth/login', {
                 email,
                 password
             });
 
-            const { token } = response.data;
-
-            // Save token to localStorage and update isAuthenticated state
-            localStorage.setItem('authToken', token);
+            const { data } = response;
+            token.set(data.token);
             isAuthenticated.set(true);
-
-            // Navigate to the dashboard page
             goto('/dashboard');
         } catch (err) {
-            error = err.response?.data?.message || 'Login failed';
+            if (err.response && err.response.data) {
+                error = err.response.data.message || 'Login failed';
+            } else {
+                error = 'An error occurred. Please try again.';
+            }
+        } finally {
+            loading = false;
         }
     }
+
+    onMount(() => {
+        // Redirect to dashboard if already authenticated
+        isAuthenticated.subscribe(value => {
+            if (value) {
+                goto('/dashboard');
+            }
+        });
+    });
 </script>
 
 <section class="bg-gray-50 dark:bg-gray-900">

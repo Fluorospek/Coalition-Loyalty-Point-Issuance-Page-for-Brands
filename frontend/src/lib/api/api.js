@@ -1,16 +1,30 @@
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
 
-// Create a writable store to track the authentication state
-export const isAuthenticated = writable(false);
+// Token store
+export const token = writable(browser ? localStorage.getItem('token') : null);
 
-// Function to check if the user is authenticated by looking for the token in localStorage
-export function checkAuth() {
-    const token = localStorage.getItem('authToken');
-    isAuthenticated.set(!!token);
-}
+// Authentication state store
+export const isAuthenticated = writable(browser ? !!localStorage.getItem('token') : false);
 
-// Function to log out the user
+// Update token and authentication state
+token.subscribe(value => {
+    if (browser) {
+        if (value) {
+            localStorage.setItem('token', value);
+            isAuthenticated.set(true);
+        } else {
+            localStorage.removeItem('token');
+            isAuthenticated.set(false);
+        }
+    }
+});
+
+// Logout function
 export function logout() {
-    localStorage.removeItem('authToken');
-    isAuthenticated.set(false);
+    token.set(null);
+    if (browser) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+    }
 }
