@@ -5,6 +5,7 @@ import { map, catchError } from 'rxjs/operators';
 import { lastValueFrom } from 'rxjs';
 import { BrandService } from 'src/brand/brand.service';
 import { IssueDto } from './dto/issue.dto';
+import { ManageDto } from './dto/manage.dto';
 
 @Injectable()
 export class LoyaltyService {
@@ -15,7 +16,7 @@ export class LoyaltyService {
   ) {}
 
   async brandToken(userId: number) {
-    const tokenDetails=this.databaseservice.brandTokens.findUnique({
+    const tokenDetails=await this.databaseservice.brandTokens.findUnique({
       where:{
         userId:userId
       }
@@ -26,24 +27,31 @@ export class LoyaltyService {
     return {tokenDetails, statusCode: 200};
   }
 
-  async manage(token: string) {
-    const res = await this.http
-      .get('https://dev.neucron.io/v1/asset/tokens/list', {
-        headers: { Authorization: token },
+  // getIDAmountBySymbol(data, symbol) {
+  //   const coins = data.data.coins;
+  //   for (const coin of coins) {
+  //     if (coin.symbol === symbol) {
+  //       return { amount: coin.amount, tokenId: coin.tokenId };
+  //     }
+  //   }
+  //   return null;
+  // }
+
+  async manage(userId:number,ManageDto:ManageDto) {
+    const res = await lastValueFrom(this.http
+      .get('https://dev.neucron.io/v1/stas/assets', {
+        headers: { Authorization: ManageDto.neucron_token },
       })
       .pipe(
         map((res) => res.data?.data),
-        map((data) => data.tokens),
       )
       .pipe(
         catchError((err) => {
           throw new NotFoundException('Invalid credentials');
         }),
-      );
+      ));
 
-    const tokens = await lastValueFrom(res);
-
-    return { tokens, statusCode: 200 };
+    return { res, statusCode: 200 }; 
   }
 
   async issue(
@@ -92,16 +100,16 @@ export class LoyaltyService {
           website: 'string',
         },
       },
-      protocolId: 'STAS-50',
+      protocolId: 'STAS',
       satsPerToken: 1,
       splitable: true,
       symbol: IssueDto.symbol,
-      totalSupply: Number(IssueDto.totalSupply),
+      totalSupply: IssueDto.totalSupply,
     };
     console.log(IssueDto.neucron_token);
     const headers = {
         'Content-Type': 'application/json',
-      'Authorization': `${IssueDto.neucron_token}`,
+      'Authorization': IssueDto.neucron_token,
       'User-Agent': 'axios/1.7.2',
     };
     const res = await this.http
@@ -115,25 +123,38 @@ export class LoyaltyService {
 
     const details = await lastValueFrom(res);
 
-  try{
-    await this.databaseservice.brandTokens.create({
-      data:{
-        user:{
-          connect:{
-            userId:userId,
-            email:email
-          }
+    const token = await this.databaseservice.brandTokens.findUnique({
+      where: {
+        userId: userId,
+      },
+    });
+    if (!token) {
+      await this.databaseservice.brandTokens.create({
+        data: {
+          user: {
+            connect: {
+              userId: userId,
+              email: email,
+            },
+          },
+          pointName: IssueDto.pointName,
+          symbol: IssueDto.symbol,
         },
-        pointName:IssueDto.pointName,
-        symbol:IssueDto.symbol,
-
-        }
-      })
-  }
-  catch(err){
-    console.log('Token already exists');
-  }
-
+      });
+    }
+    await this.databaseservice.issuedPoints.create({
+      data: {
+        user: {
+          connect: {
+            userId: userId,
+          },
+        },
+        
+        pointName: IssueDto.pointName,
+        symbol: IssueDto.symbol,
+        totalSupply: IssueDto.totalSupply,
+      },
+    });
     return { details, statusCode: 200 };
   }
 }
