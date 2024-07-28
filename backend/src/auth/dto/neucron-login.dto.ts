@@ -9,7 +9,6 @@ export class NeucronLoginDto{
 
     @ApiProperty({type:String,description:"Password of the Neucron wallet user"})
     @IsString()
-    @Length(8,20)
     @IsNotEmpty()
     password:string
 }
