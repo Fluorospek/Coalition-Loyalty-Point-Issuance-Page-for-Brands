@@ -6,6 +6,7 @@ import { lastValueFrom } from 'rxjs';
 import { BrandService } from 'src/brand/brand.service';
 import { IssueDto } from './dto/issue.dto';
 import { ManageDto } from './dto/manage.dto';
+import { DistributeDto } from './dto/distribute.dto';
 
 @Injectable()
 export class LoyaltyService {
@@ -15,17 +16,17 @@ export class LoyaltyService {
     private readonly brandService: BrandService,
   ) {}
 
-  async brandToken(userId: number) {
-    const tokenDetails=await this.databaseservice.brandTokens.findUnique({
-      where:{
-        userId:userId
-      }
-    })
-    if(!tokenDetails){
-      throw new NotFoundException('Token Not Found');
-    }
-    return {tokenDetails, statusCode: 200};
-  }
+  // async brandToken(userId: number) {
+  //   const tokenDetails=await this.databaseservice.brandTokens.findUnique({
+  //     where:{
+  //       userId:userId
+  //     }
+  //   })
+  //   if(!tokenDetails){
+  //     throw new NotFoundException('Token Not Found');
+  //   }
+  //   return {tokenDetails, statusCode: 200};
+  // }
 
   // getIDAmountBySymbol(data, symbol) {
   //   const coins = data.data.coins;
@@ -37,28 +38,27 @@ export class LoyaltyService {
   //   return null;
   // }
 
-  async manage(userId:number,ManageDto:ManageDto) {
-    const res = await lastValueFrom(this.http
-      .get('https://dev.neucron.io/v1/stas/assets', {
-        headers: { Authorization: ManageDto.neucron_token },
-      })
-      .pipe(
-        map((res) => res.data?.data),
-      )
-      .pipe(
-        catchError((err) => {
-          throw new NotFoundException('Invalid credentials');
-        }),
-      ));
-
-    return { res, statusCode: 200 }; 
+  async manage(userId: number, ManageDto: ManageDto) {
+    const res = await this.databaseservice.user.findUnique({
+      where: {
+        userId: userId,
+      },
+      include: {
+        brand: {
+          include: {
+            BrandTokens: {
+              include: {
+                IssuedPoints: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return { res, statusCode: 200 };
   }
 
-  async issue(
-    userId: number,
-    email: string,
-    IssueDto:IssueDto,
-  ) {
+  async issue(userId: number, email: string, IssueDto: IssueDto) {
     const brand = await this.brandService.findBrand(userId);
     if (!brand) {
       throw new NotFoundException('Brand Not Found');
@@ -108,12 +108,12 @@ export class LoyaltyService {
     };
     console.log(IssueDto.neucron_token);
     const headers = {
-        'Content-Type': 'application/json',
-      'Authorization': IssueDto.neucron_token,
+      'Content-Type': 'application/json',
+      Authorization: IssueDto.neucron_token,
       'User-Agent': 'axios/1.7.2',
     };
     const res = await this.http
-      .post('https://dev.neucron.io/v1/stas/mint', bodyData,{headers})
+      .post('https://dev.neucron.io/v1/stas/mint', bodyData, { headers })
       .pipe(map((res) => res.data))
       .pipe(
         catchError((err) => {
@@ -123,38 +123,117 @@ export class LoyaltyService {
 
     const details = await lastValueFrom(res);
 
-    const token = await this.databaseservice.brandTokens.findUnique({
-      where: {
-        userId: userId,
-      },
+    // const token = await this.databaseservice.brandTokens.findUnique({
+    //   where: {
+    //     userId: userId,
+    //   },
+    // });
+    // if (!token) {
+    //   await this.databaseservice.brandTokens.create({
+    //     data: {
+    //       user: {
+    //         connect: {
+    //           userId: userId,
+    //           email: email,
+    //         },
+    //       },
+    //       pointName: IssueDto.pointName,
+    //       symbol: IssueDto.symbol,
+    //     },
+    //   });
+    // }
+    // await this.databaseservice.issuedPoints.create({
+    //   data: {
+    //     user: {
+    //       connect: {
+    //         userId: userId,
+    //       },
+    //     },
+
+    //     pointName: IssueDto.pointName,
+    //     symbol: IssueDto.symbol,
+    //     totalSupply: IssueDto.totalSupply,
+    //   },
+    // });
+
+    const brandId=brand.brandId;
+    const brandToken=await this.databaseservice.brandTokens.findUnique({
+      where:{
+        brandId:brandId
+      }
     });
-    if (!token) {
+    if(!brandToken){
       await this.databaseservice.brandTokens.create({
-        data: {
-          user: {
-            connect: {
-              userId: userId,
-              email: email,
-            },
+        data:{
+          brand:{
+            connect:{
+              brandId:brandId
+            }
           },
-          pointName: IssueDto.pointName,
-          symbol: IssueDto.symbol,
-        },
+          pointName:IssueDto.pointName,
+          symbol:IssueDto.symbol
+        }
       });
     }
     await this.databaseservice.issuedPoints.create({
-      data: {
-        user: {
-          connect: {
-            userId: userId,
-          },
+      data:{
+        brandTokens:{
+          connect:{
+            brandId:brandId
+          }
         },
-        
-        pointName: IssueDto.pointName,
-        symbol: IssueDto.symbol,
-        totalSupply: IssueDto.totalSupply,
-      },
+        totalSupply:IssueDto.totalSupply
+      }
     });
     return { details, statusCode: 200 };
+  }
+
+  async distribute(userId:number,DistributeDto:DistributeDto){
+    const issuedPoints=await this.databaseservice.issuedPoints.findUnique({
+      where:{
+        issuedPointId:DistributeDto.issuedPointId
+      }
+    });
+    if(!issuedPoints){
+      throw new NotFoundException('Issued Points Not Found');
+    }
+    if(issuedPoints.totalSupply<DistributeDto.amount){
+      throw new NotFoundException('Insufficient Points');
+    }
+    await this.databaseservice.transactions.create({
+      data:{
+        IssuedPoints:{
+          connect:{
+            issuedPointId:DistributeDto.issuedPointId
+          }
+        },
+        amount:DistributeDto.amount,
+        transactionType:'DEBIT',
+        recipientAddress:DistributeDto.recipientAddress,
+        status:'COMPLETED'
+      }
+    });
+  }
+
+  async transactions(userId:number){
+    const transactions=await this.databaseservice.user.findUnique({
+      where:{userId:userId},
+      include:{
+        brand:{
+          include:{
+            BrandTokens:{
+              include:{
+                IssuedPoints:{
+                  include:{
+                    Transactions:true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    return {transactions, statusCode: 200};
   }
 }

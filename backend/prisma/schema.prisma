@@ -14,75 +14,57 @@ datasource db {
 }
 
 model User {
-  userId       Int            @id @default(autoincrement())
-  email        String         @unique
-  name         String
-  password     String
-  createdAt    DateTime       @default(now())
-  brands       Brand[]
-  // brandTokens  BrandTokens[]
-  issuedPoints IssuedPoints[]
-  transactions Transactions[]
+  userId    Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+  brand     Brand?
 }
 
 model Brand {
   brandId      Int      @id @default(autoincrement())
-  userId       Int      @unique
+  brandRepId   Int      @unique
   brandName    String
   description  String?
   otherDetails Json?
   createdAt    DateTime @default(now())
 
-  user         User           @relation(fields: [userId], references: [userId])
-  IssuedPoints IssuedPoints[]
-  Transactions Transactions[]
-  brandTokens  BrandTokens[]
+  user User @relation(fields: [brandRepId], references: [userId])
+
+  BrandTokens BrandTokens?
 }
 
 model BrandTokens {
   brandTokenId Int      @id @default(autoincrement())
-  // userId       Int      @unique
   brandId      Int      @unique
   pointName    String
   symbol       String
   createdAt    DateTime @default(now())
 
-  // user         User           @relation(fields: [userId], references: [userId])
   brand        Brand          @relation(fields: [brandId], references: [brandId])
   IssuedPoints IssuedPoints[]
-  Transactions Transactions[]
 }
 
 model IssuedPoints {
   issuedPointId Int      @id @default(autoincrement())
-  userId        Int
-  brandId       Int
   brandTokenId  Int
-  points        Int
+  totalSupply   Int
   createdAt     DateTime @default(now())
 
-  user         User           @relation(fields: [userId], references: [userId])
-  brand        Brand          @relation(fields: [brandId], references: [brandId])
   brandTokens  BrandTokens    @relation(fields: [brandTokenId], references: [brandTokenId])
   Transactions Transactions[]
 }
 
 model Transactions {
   transactionId    Int       @id @default(autoincrement())
-  userId           Int
   issuedPointId    Int
-  brandId          Int
-  brandTokenId     Int
   amount           Int
   transactionType  TransType
   date             DateTime  @default(now())
-  senderAddress    String?
   recipientAddress String?
   status           Status
 
-  user         User         @relation(fields: [userId], references: [userId])
-  brand        Brand        @relation(fields: [brandId], references: [brandId])
-  brandTokens  BrandTokens  @relation(fields: [brandTokenId], references: [brandTokenId])
   IssuedPoints IssuedPoints @relation(fields: [issuedPointId], references: [issuedPointId])
 }
 

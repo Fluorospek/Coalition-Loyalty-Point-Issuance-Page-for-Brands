@@ -5,6 +5,10 @@ export class DistributeDto{
     @IsNotEmpty()
     access_token:string
 
+    @IsNumber()
+    @IsNotEmpty()
+    issuedPointId:number
+
     @IsString()
     @IsNotEmpty()
     recipientAddress:string
