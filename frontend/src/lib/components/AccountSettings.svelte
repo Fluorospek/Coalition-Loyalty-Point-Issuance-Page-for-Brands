@@ -12,14 +12,11 @@
 
 	async function fetchBrandDetails() {
 		try {
-			const response = await axios.get(
-				'https://coalition-loyalty-point-issuance-page.onrender.com/brand/details',
-				{
-					headers: {
-						Authorization: `Bearer ${get(token)}`
-					}
+			const response = await axios.get('https://localhost:3000/brand/details', {
+				headers: {
+					Authorization: `Bearer ${get(token)}`
 				}
-			);
+			});
 			if (response.status === 200) {
 				brandData = response.data.data;
 				dispatch('brandExists');
