@@ -25,6 +25,7 @@
 	import Wallet from '../../../lib/components/Wallet.svelte';
 
 	let mainContent = BrandSetup;
+
 	let sidebarItems = [
 		{
 			title: 'Brand Profile Setup',
@@ -47,8 +48,6 @@
 			component: AccountSettings
 		}
 	];
-
-	console.log(sidebarItems);
 	function handleViewTransactions() {
 		mainContent = Transactions;
 	}
@@ -129,28 +128,70 @@
 			on:LoyaltyPointConfirmationGoBack={handleLoyaltyPointConfirmationBack}
 			on:createPopup={handleCreatePopup}
 			on:brandExists={handleBrandExists}
-		/>
-	</div>
-{/if}
-
-<style>
-	.active {
-		@apply bg-gray-100 dark:bg-gray-700;
+			/>
+			</div>
+			{/if}
+			
+			<style>
+				.active {
+					@apply bg-gray-100 dark:bg-gray-700;
 	}
 </style> -->
 <script>
 	import { onMount } from 'svelte';
-	import { token, isAuthenticated } from '$lib/api/api';
+	import { token, isbrandExists, isloyaltyPointIssue, isAuthenticated } from '$lib/api/api';
 	import { goto } from '$app/navigation';
+	import axios from 'axios';
+	import { get } from 'svelte/store';
 
 	let authenticated = false;
 
 	// Check authentication on mount
 	onMount(() => {
+		async function checkBrand() {
+			try {
+				const response = await axios.get('http://localhost:3000/brand/details', {
+					headers: {
+						Authorization: `Bearer ${get(token)}`
+					}
+				});
+				if (response.status === 200) {
+					localStorage.setItem('isbrandExists', true);
+					isbrandExists.set(true);
+				} else {
+					localStorage.setItem('isbrandExists', false);
+					isbrandExists.set(false);
+				}
+			} catch (error) {
+				throw new Error('Error fetching brand details: ' + error.message);
+			}
+		}
+		async function checkLoyaltyPoint() {
+			try {
+				const response = await axios.get('http://localhost:3000/user/profile', {
+					headers: {
+						Authorization: `Bearer ${get(token)}`
+					}
+				});
+				if (response.status === 200) {
+					localStorage.setItem('isloyaltyPointIssue', true);
+					isloyaltyPointIssue.set(true);
+				} else {
+					localStorage.setItem('isloyaltyPointIssue', false);
+					isloyaltyPointIssue.set(false);
+				}
+			} catch (error) {
+				throw new Error('Error fetching user profile: ' + error.message);
+			}
+		}
 		isAuthenticated.subscribe((value) => {
 			authenticated = value;
 			if (!authenticated) {
 				goto('/login');
+			} else {
+				checkBrand();
+				checkLoyaltyPoint();
+				console.log(get(isbrandExists), get(isloyaltyPointIssue));
 			}
 		});
 	});
@@ -166,13 +207,12 @@
 	import Wallet from '../../../lib/components/Wallet.svelte';
 
 	let mainContent = BrandSetup;
-	let brandExists = false;
 
 	let sidebarItems = [
 		{
 			title: 'Brand Profile Setup',
 			component: BrandSetup,
-			visible: !brandExists
+			visible: !get(isbrandExists)
 		},
 		{
 			title: 'Wallet Signin',
@@ -182,7 +222,7 @@
 		{
 			title: 'Loyalty Point Issuance',
 			component: LoyaltyPointParameters,
-			visible: true
+			visible: !get(isloyaltyPointIssue)
 		},
 		{
 			title: 'Loyalty Point Management',
@@ -226,9 +266,10 @@
 			}
 		});
 	}
+	/*
 	function handleBrandExists() {
-		brandExists = true;
-		sidebarItems = sidebarItems.map(item => {
+		brandExist = true;
+		sidebarItems = sidebarItems.map((item) => {
 			if (item.title === 'Brand Profile Setup') {
 				item.visible = false;
 			}
@@ -239,7 +280,7 @@
 			mainContent = Wallet;
 		}
 	}
-
+*/
 	// Ensure authentication check is done on mount
 	onMount(() => {
 		isAuthenticated.subscribe((value) => {
@@ -259,7 +300,7 @@
 	>
 		<div class="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
 			<ul class="space-y-2 font-medium">
-				{#each sidebarItems.filter(item => item.visible) as { title, component }}
+				{#each sidebarItems.filter((item) => item.visible) as { title, component }}
 					<li>
 						<button
 							on:click={() => {
@@ -286,7 +327,6 @@
 			on:loyaltypointparameters={handleLoyaltyParameter}
 			on:LoyaltyPointConfirmationGoBack={handleLoyaltyPointConfirmationBack}
 			on:createPopup={handleCreatePopup}
-			on:brandExists={handleBrandExists}
 		/>
 	</div>
 {/if}
