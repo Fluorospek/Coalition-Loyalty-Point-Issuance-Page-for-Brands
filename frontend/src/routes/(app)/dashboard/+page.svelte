@@ -80,8 +80,8 @@
 		});
 	}
 	function handleBrandExists() {
+		mainContent = sidebarItems[1];
 		sidebarItems.pop(0);
-		mainContent = sidebarItems[0];
 	}
 	onMount(() => {
 		isAuthenticated.subscribe((value) => {
