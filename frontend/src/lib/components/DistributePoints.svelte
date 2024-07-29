@@ -76,7 +76,7 @@
 		<h2 class="mb-4 text-3xl tracking-tight font-bold text-center text-gray-900 dark:text-white">
 			Distribute Loyalty Points
 		</h2>
-		<form  class="space-y-4">
+		<form class="space-y-4">
 			<div>
 				<label
 					for="paymail"
@@ -133,4 +133,3 @@
 		</form>
 	</div>
 </section>
-

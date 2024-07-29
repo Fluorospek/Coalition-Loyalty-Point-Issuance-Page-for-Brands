@@ -25,6 +25,7 @@
 	import Wallet from '../../../lib/components/Wallet.svelte';
 
 	let mainContent = BrandSetup;
+
 	let sidebarItems = [
 		{
 			title: 'Brand Profile Setup',
@@ -47,8 +48,6 @@
 			component: AccountSettings
 		}
 	];
-
-	console.log(sidebarItems);
 	function handleViewTransactions() {
 		mainContent = Transactions;
 	}
@@ -79,9 +78,11 @@
 			}
 		});
 	}
-	function handleBrandExists() {
-		mainContent = sidebarItems[1];
-		sidebarItems.pop(0);
+	async function handleBrandExists() {
+		if (sidebarItems[0].title === 'Brand Profile Setup') {
+			sidebarItems = sidebarItems.slice(1);
+			mainContent = sidebarItems[0].component;
+		}
 	}
 	onMount(() => {
 		isAuthenticated.subscribe((value) => {

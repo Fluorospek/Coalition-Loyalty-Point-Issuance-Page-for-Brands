@@ -42,7 +42,7 @@
 
 		try {
 			const response = await axios.post(
-				'https://localhost:3000/brand/setup',
+				'http://localhost:3000/brand/setup',
 				{
 					brandName,
 					description

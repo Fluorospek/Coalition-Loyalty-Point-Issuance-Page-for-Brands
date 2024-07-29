@@ -15,13 +15,10 @@
 		error = '';
 
 		try {
-			const response = await axios.post(
-				'https://coalition-loyalty-point-issuance-page.onrender.com/auth/login',
-				{
-					email,
-					password
-				}
-			);
+			const response = await axios.post('http://localhost:3000/auth/login', {
+				email,
+				password
+			});
 
 			const { data } = response;
 			token.set(data.token);
