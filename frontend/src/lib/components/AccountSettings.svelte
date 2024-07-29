@@ -30,14 +30,11 @@
 
 	async function fetchUserProfile() {
 		try {
-			const response = await axios.get(
-				'https://coalition-loyalty-point-issuance-page.onrender.com/user/profile',
-				{
-					headers: {
-						Authorization: `Bearer ${get(token)}`
-					}
+			const response = await axios.get('https://localhost:3000/user/profile', {
+				headers: {
+					Authorization: `Bearer ${get(token)}`
 				}
-			);
+			});
 			if (response.status === 200) {
 				userData = response.data;
 			} else {
