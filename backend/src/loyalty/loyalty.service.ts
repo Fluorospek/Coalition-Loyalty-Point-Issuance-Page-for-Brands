@@ -183,8 +183,8 @@ export class LoyaltyService {
           }
         },
         totalSupply:IssueDto.totalSupply,
-        transactionId:details.transactionId,
-        assetId:details.assetId,
+        transactionId:details.data.details.TxID,
+        assetId:details.data.details.AssetID,
       }
     });
     return { details, statusCode: 200 };

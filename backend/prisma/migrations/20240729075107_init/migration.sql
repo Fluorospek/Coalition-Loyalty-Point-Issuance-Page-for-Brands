@@ -43,7 +43,7 @@ CREATE TABLE "IssuedPoints" (
     "issuedPointId" SERIAL NOT NULL,
     "brandTokenId" INTEGER NOT NULL,
     "assetId" TEXT NOT NULL,
-    "transactionId" INTEGER NOT NULL,
+    "transactionId" TEXT NOT NULL,
     "totalSupply" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -75,6 +75,9 @@ CREATE UNIQUE INDEX "BrandTokens_brandId_key" ON "BrandTokens"("brandId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "IssuedPoints_assetId_key" ON "IssuedPoints"("assetId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "IssuedPoints_transactionId_key" ON "IssuedPoints"("transactionId");
 
 -- AddForeignKey
 ALTER TABLE "Brand" ADD CONSTRAINT "Brand_brandRepId_fkey" FOREIGN KEY ("brandRepId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
