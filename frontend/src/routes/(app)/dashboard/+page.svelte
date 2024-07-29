@@ -164,7 +164,7 @@
 	import DistributePoints from '../../../lib/components/DistributePoints.svelte';
 	import PopupModal from '../../../lib/components/PopupModal.svelte';
 	import Wallet from '../../../lib/components/Wallet.svelte';
-
+    import Loyalitydefine from '../../../lib/components/Loyalitydefine.svelte';
 	let mainContent = BrandSetup;
 	let brandExists = false;
 
@@ -173,6 +173,11 @@
 			title: 'Brand Profile Setup',
 			component: BrandSetup,
 			visible: !brandExists
+		},
+		{
+			title:' Loyality Point Define',
+			component: Loyalitydefine,
+			visible: true
 		},
 		{
 			title: 'Wallet Signin',
