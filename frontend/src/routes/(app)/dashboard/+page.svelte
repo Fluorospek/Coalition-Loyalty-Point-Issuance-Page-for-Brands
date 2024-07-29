@@ -73,7 +73,6 @@
 				}
 			}
 		});
-		console.log(event.detail);
 	}
 	function handleBrandExists() {
 		sidebarItems.pop(0);
