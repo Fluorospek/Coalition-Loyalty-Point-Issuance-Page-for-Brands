@@ -3,6 +3,8 @@ import { LoyaltyService } from './loyalty.service';
 import { ApiBearerAuth, ApiOperation, ApiTags} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
 import { IssueDto } from './dto/issue.dto';
+import { DefineDto } from './dto/define.dto';
+import { IssueV2Dto } from './dto/issuev2.dto';
 
 @ApiTags('Loyalty')
 @Controller('loyalty')
@@ -30,16 +32,38 @@ export class LoyaltyController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @Post('transactions')
+  @Get('transactions')
   @ApiOperation({description:"Brand Representative views transactions",summary:"View Transactions"})
-  async transactions(@Req() req){}
+  async transactions(@Req() req){
+    const userId=req.user.userId;
+    return await this.loyaltyService.transactions(userId);
+  }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('brand-token')
+  @ApiOperation({description:"Brand Representative can view brand Token details",summary:"Brand Token Details"})
+  async brandToken(@Req() req){
+    const userId=req.user.userId;
+    return await this.loyaltyService.brandToken(userId); 
+  }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Get('brand-tokens')
-  // @ApiOperation({description:"Brand Representative can view if token has been issued",summary:"Get Brand Token Details"})
-  // async brandTokens(@Req() req){
-  //   const userId=req.user.userId;
-  //   return await this.loyaltyService.brandToken(userId);
-  // }
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('define')
+  @ApiOperation({description:"Brand Representative can define Loyalty point details",summary:"Define Loyalty Point Details"})
+  async define(@Req() req, DefineDto:DefineDto){
+    const userId=req.user.userId;
+    return await this.loyaltyService.define(userId,DefineDto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('issue-v2')
+  @ApiOperation({description:"Brand Representative can issue Loyalty points",summary:"Issue Loyalty Points"})
+  async issueV2(@Req() req,@Body() IssueV2Dto:IssueV2Dto){
+    const userId=req.user.userId;
+    const email=req.user.email;
+    return await this.loyaltyService.issueV2(userId,email,IssueV2Dto);
+  }
 }
