@@ -9,8 +9,4 @@ export class DefineDto{
     @IsString()
     @IsNotEmpty()
     symbol:string
-
-    @IsNumber()
-    @IsNotEmpty()
-    totalSupply:number
 }
