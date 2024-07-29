@@ -1,5 +1,9 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { map, catchError } from 'rxjs/operators';
 import { lastValueFrom } from 'rxjs';
@@ -198,7 +202,7 @@ export class LoyaltyService {
     //   },
     // });
 
-     const brandId = brand.brandId;
+    const brandId = brand.brandId;
     // const brandToken = await this.databaseservice.brandTokens.findUnique({
     //   where: {
     //     brandId: brandId,
@@ -217,8 +221,8 @@ export class LoyaltyService {
     //     },
     //   });
     // }
-    const brandToken=this.define(userId,IssueDto);
-    const issuedPoint=await this.databaseservice.issuedPoints.create({
+    const brandToken = this.define(userId, IssueDto);
+    const issuedPoint = await this.databaseservice.issuedPoints.create({
       data: {
         brandTokens: {
           connect: {
@@ -230,7 +234,12 @@ export class LoyaltyService {
         assetId: details.data.details.AssetID,
       },
     });
-    return { pontName:IssueDto.pointName,symbol:IssueDto.symbol,issuedPoint, statusCode: 200 };
+    return {
+      pontName: IssueDto.pointName,
+      symbol: IssueDto.symbol,
+      issuedPoint,
+      statusCode: 200,
+    };
   }
 
   async distribute(userId: number, DistributeDto: DistributeDto) {
@@ -266,14 +275,19 @@ export class LoyaltyService {
     const brandTokenId = tokenDetails.tokenDetails.brandTokenId;
     const transactions = await this.databaseservice.issuedPoints.findMany({
       where: { brandTokenId: brandTokenId },
-      include:{
-        Transactions:true
-      }
+      include: {
+        Transactions: true,
+      },
     });
-    return { transactions, statusCode: 200 };
+    return {
+      pointName: tokenDetails.tokenDetails.pointName,
+      symbol: tokenDetails.tokenDetails.symbol,
+      transactions,
+      statusCode: 200,
+    };
   }
 
-  async define(userId:number,DefineDto:DefineDto){
+  async define(userId: number, DefineDto: DefineDto) {
     const brand = await this.brandService.findBrand(userId);
     if (!brand) {
       throw new NotFoundException('Brand Not Found');
@@ -284,31 +298,32 @@ export class LoyaltyService {
         brandId: brandId,
       },
     });
-    if (!brandToken) {
-      brandToken=await this.databaseservice.brandTokens.create({
-        data: {
-          brand: {
-            connect: {
-              brandId: brandId,
-            },
-          },
-          pointName: DefineDto.pointName,
-          symbol: DefineDto.symbol,
-        },
-      });
+    if (brandToken) {
+      throw new ConflictException('Token Already Defined');
     }
-    return {brandToken,statusCode:200};
+    brandToken = await this.databaseservice.brandTokens.create({
+      data: {
+        brand: {
+          connect: {
+            brandId: brandId,
+          },
+        },
+        pointName: DefineDto.pointName,
+        symbol: DefineDto.symbol,
+      },
+    });
+    return { brandToken, statusCode: 200 };
   }
-  
-  async issueV2(userId:number,email:string,IssueV2Dto:IssueV2Dto){
+
+  async issueV2(userId: number, email: string, IssueV2Dto: IssueV2Dto) {
     const brand = await this.brandService.findBrand(userId);
     if (!brand) {
       throw new NotFoundException('Brand Not Found');
     }
     const brandName = brand.brandName;
-    const tokenDetails=await this.brandToken(userId);
-    const tokenName=tokenDetails.tokenDetails.pointName;
-    const tokenSymbol=tokenDetails.tokenDetails.symbol;
+    const tokenDetails = await this.brandToken(userId);
+    const tokenName = tokenDetails.tokenDetails.pointName;
+    const tokenSymbol = tokenDetails.tokenDetails.symbol;
     console.log(IssueDto);
     const bodyData = {
       data: {},
@@ -401,7 +416,7 @@ export class LoyaltyService {
     //   },
     // });
 
-     const brandId = brand.brandId;
+    const brandId = brand.brandId;
     // const brandToken = await this.databaseservice.brandTokens.findUnique({
     //   where: {
     //     brandId: brandId,
@@ -421,7 +436,7 @@ export class LoyaltyService {
     //   });
     // }
     //const brandToken=this.define(userId,IssueV2Dto);
-    const issuedPoint=await this.databaseservice.issuedPoints.create({
+    const issuedPoint = await this.databaseservice.issuedPoints.create({
       data: {
         brandTokens: {
           connect: {
@@ -433,6 +448,11 @@ export class LoyaltyService {
         assetId: details.data.details.AssetID,
       },
     });
-    return { pontName:tokenName,symbol:tokenSymbol,issuedPoint, statusCode: 200 };
+    return {
+      pontName: tokenName,
+      symbol: tokenSymbol,
+      issuedPoint,
+      statusCode: 200,
+    };
   }
 }
