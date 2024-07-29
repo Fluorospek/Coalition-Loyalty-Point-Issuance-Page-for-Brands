@@ -62,7 +62,7 @@
 	function handleLoyaltyPointConfirmationBack() {
 		mainContent = LoyaltyPointParameters;
 	}
-	function handleBrandsetupPopup(event) {
+	function handleCreatePopup(event) {
 		const details = event.detail;
 		const modal = new PopupModal({
 			target: document.body,
@@ -73,7 +73,6 @@
 				}
 			}
 		});
-		console.log(event.detail);
 	}
 	function handleBrandExists() {
 		sidebarItems.pop(0);
@@ -123,7 +122,7 @@
 			on:distributePoints={handleViewDistributePoints}
 			on:loyaltypointparameters={handleLoyaltyParameter}
 			on:LoyaltyPointConfirmationGoBack={handleLoyaltyPointConfirmationBack}
-			on:brandsetupPopup={handleBrandsetupPopup}
+			on:createPopup={handleCreatePopup}
 			on:brandExists={handleBrandExists}
 		/>
 	</div>
