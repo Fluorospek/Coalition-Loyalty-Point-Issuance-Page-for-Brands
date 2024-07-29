@@ -52,7 +52,7 @@ export class LoyaltyController {
   @UseGuards(JwtAuthGuard)
   @Post('define')
   @ApiOperation({description:"Brand Representative can define Loyalty point details",summary:"Define Loyalty Point Details"})
-  async define(@Req() req, DefineDto:DefineDto){
+  async define(@Req() req,@Body() DefineDto:DefineDto){
     const userId=req.user.userId;
     return await this.loyaltyService.define(userId,DefineDto);
   }

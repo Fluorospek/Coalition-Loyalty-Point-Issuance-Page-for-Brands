@@ -20,7 +20,7 @@ export class AuthService {
 
     async login(LoginDto:LoginDto){
         const {email,password}=LoginDto;
-        const user=await this.dataservice.user.findFirst({
+        const user=await this.dataservice.user.findUnique({
             where:{
                 email:email
             }
