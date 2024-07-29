@@ -1,19 +1,19 @@
 <script>
 	import { onMount } from 'svelte';
-    import { token, isAuthenticated } from '$lib/api/api';
-    import { goto } from '$app/navigation';
+	import { token, isAuthenticated } from '$lib/api/api';
+	import { goto } from '$app/navigation';
 
-    let authenticated = false;
+	let authenticated = false;
 
-    // Check authentication on mount
-    onMount(() => {
-        isAuthenticated.subscribe(value => {
-            authenticated = value;
-            if (!authenticated) {
-                goto('/login');
-            }
-        });
-    });
+	// Check authentication on mount
+	onMount(() => {
+		isAuthenticated.subscribe((value) => {
+			authenticated = value;
+			if (!authenticated) {
+				goto('/login');
+			}
+		});
+	});
 	import BrandSetup from '../../../lib/components/BrandSetup.svelte';
 	import LoyaltyPointParameters from '../../../lib/components/LoyaltyPointParameters.svelte';
 	import LoyaltyPointManagement from '../../../lib/components/LoyaltyPointManagement.svelte';
@@ -21,6 +21,8 @@
 	import AccountSettings from '../../../lib/components/AccountSettings.svelte';
 	import Transactions from '../../../lib/components/Transactions.svelte';
 	import DistributePoints from '../../../lib/components/DistributePoints.svelte';
+	import PopupModal from '../../../lib/components/PopupModal.svelte';
+
 	let mainContent = BrandSetup;
 	let sidebarItems = [
 		{
@@ -40,6 +42,8 @@
 			component: AccountSettings
 		}
 	];
+
+	console.log(sidebarItems);
 	function handleViewTransactions() {
 		mainContent = Transactions;
 	}
@@ -58,55 +62,74 @@
 	function handleLoyaltyPointConfirmationBack() {
 		mainContent = LoyaltyPointParameters;
 	}
+	function handleCreatePopup(event) {
+		const details = event.detail;
+		const modal = new PopupModal({
+			target: document.body,
+			props: {
+				details: {
+					success: details.success,
+					message: details.message
+				}
+			}
+		});
+	}
+	function handleBrandExists() {
+		sidebarItems.pop(0);
+		mainContent = sidebarItems[0];
+	}
 	onMount(() => {
-        isAuthenticated.subscribe(value => {
-            authenticated = value;
-            if (!authenticated) {
-                goto('/login');
-            }
-        });
-    });
+		isAuthenticated.subscribe((value) => {
+			authenticated = value;
+			if (!authenticated) {
+				goto('/login');
+			}
+		});
+	});
 </script>
-{#if authenticated}
-<aside
-	id="default-sidebar"
-	class="fixed top-0 left-0 z-40 w-64 h-[400] transition-transform -translate-x-full sm:translate-x-0 pt-16"
-	aria-label="Sidebar"
->
-	<div class="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
-		<ul class="space-y-2 font-medium">
-			{#each sidebarItems as { title, component }}
-				<li>
-					<button
-						on:click={() => {
-							mainContent = component;
-						}}
-						class:active={mainContent === component}
-						class="w-full text-left p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-					>
-						{title}
-					</button>
-				</li>
-			{/each}
-		</ul>
-	</div>
-</aside>
 
-<div class="p-4 sm:ml-64">
-	<svelte:component
-		this={mainContent}
-		on:viewTransactions={handleViewTransactions}
-		on:goBackTransaction={handleTransactionGoBack}
-		on:goBackDistributePoints={handleDistributeGoBack}
-		on:distributePoints={handleViewDistributePoints}
-		on:loyaltypointparameters={handleLoyaltyParameter}
-		on:LoyaltyPointConfirmationGoBack={handleLoyaltyPointConfirmationBack}
-	/>
-</div>
+{#if authenticated}
+	<aside
+		id="default-sidebar"
+		class="fixed top-0 left-0 z-40 w-64 h-[400] transition-transform -translate-x-full sm:translate-x-0 pt-16"
+		aria-label="Sidebar"
+	>
+		<div class="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
+			<ul class="space-y-2 font-medium">
+				{#each sidebarItems as { title, component }}
+					<li>
+						<button
+							on:click={() => {
+								mainContent = component;
+							}}
+							class:active={mainContent === component}
+							class="w-full text-left p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+						>
+							{title}
+						</button>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	</aside>
+
+	<div class="p-4 sm:ml-" id="dashboard-main">
+		<svelte:component
+			this={mainContent}
+			on:viewTransactions={handleViewTransactions}
+			on:goBackTransaction={handleTransactionGoBack}
+			on:goBackDistributePoints={handleDistributeGoBack}
+			on:distributePoints={handleViewDistributePoints}
+			on:loyaltypointparameters={handleLoyaltyParameter}
+			on:LoyaltyPointConfirmationGoBack={handleLoyaltyPointConfirmationBack}
+			on:createPopup={handleCreatePopup}
+			on:brandExists={handleBrandExists}
+		/>
+	</div>
 {/if}
+
 <style>
 	.active {
 		@apply bg-gray-100 dark:bg-gray-700;
 	}
 </style>
-    

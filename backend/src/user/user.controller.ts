@@ -1,13 +1,14 @@
 import { Controller, UseGuards,Get,Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   @ApiOperation({description:"Fetch details of the registered Brand representative",summary:"Profile"})

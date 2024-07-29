@@ -1,7 +1,7 @@
 import { Controller, UseGuards,Post,Body,Req,Get } from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BrandDto } from './dto/brand.dto';
 
 @ApiTags('Brand')
@@ -9,6 +9,7 @@ import { BrandDto } from './dto/brand.dto';
 export class BrandController {
   constructor(private readonly brandService: BrandService) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('details')
   @ApiOperation({description:'Get details of brand',summary:'Brand Details'})
@@ -17,6 +18,7 @@ export class BrandController {
     return await this.brandService.details(userId);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('setup')
   @ApiOperation({description:'Brand Representative sets up the Brand',summary:'Brand Setup'})

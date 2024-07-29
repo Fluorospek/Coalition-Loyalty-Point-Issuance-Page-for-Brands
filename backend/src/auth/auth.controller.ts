@@ -1,7 +1,7 @@
 import { Controller,Post,Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterBrandRepDto } from './dto/register.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './auth.guard';
@@ -24,6 +24,7 @@ export class AuthController {
     return await this.authService.login(LoginDto)
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('neucron-login')
   @ApiOperation({description:"Brand Representative logs into neucron wallet using email",summary:"Login to neucron wallet"})
