@@ -5,7 +5,6 @@ import { map, catchError } from 'rxjs/operators';
 import { lastValueFrom } from 'rxjs';
 import { BrandService } from 'src/brand/brand.service';
 import { IssueDto } from './dto/issue.dto';
-import { ManageDto } from './dto/manage.dto';
 import { DistributeDto } from './dto/distribute.dto';
 
 @Injectable()
@@ -38,7 +37,7 @@ export class LoyaltyService {
   //   return null;
   // }
 
-  async manage(userId: number, ManageDto: ManageDto) {
+  async manage(userId: number) {
     const res = await this.databaseservice.user.findUnique({
       where: {
         userId: userId,
