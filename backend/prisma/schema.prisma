@@ -50,7 +50,7 @@ model IssuedPoints {
   issuedPointId Int      @id @default(autoincrement())
   brandTokenId  Int
   assetId       String   @unique
-  transactionId Int
+  transactionId String   @unique
   totalSupply   Int
   createdAt     DateTime @default(now())
 

@@ -7,7 +7,7 @@ export class BrandService {
     constructor(private readonly dataservice: DatabaseService){}
 
     async findBrand(userId:number){
-        const brand=await this.dataservice.brand.findFirst({
+        const brand=await this.dataservice.brand.findUnique({
             where:{
                 brandRepId:userId
             }
