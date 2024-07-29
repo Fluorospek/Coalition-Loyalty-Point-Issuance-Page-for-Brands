@@ -6,6 +6,9 @@ import { lastValueFrom } from 'rxjs';
 import { BrandService } from 'src/brand/brand.service';
 import { IssueDto } from './dto/issue.dto';
 import { DistributeDto } from './dto/distribute.dto';
+import { DefaultArgs } from '@prisma/client/runtime/library';
+import { DefineDto } from './dto/define.dto';
+import { IssueV2Dto } from './dto/issuev2.dto';
 
 @Injectable()
 export class LoyaltyService {
@@ -15,17 +18,23 @@ export class LoyaltyService {
     private readonly brandService: BrandService,
   ) {}
 
-  // async brandToken(userId: number) {
-  //   const tokenDetails=await this.databaseservice.brandTokens.findUnique({
-  //     where:{
-  //       userId:userId
-  //     }
-  //   })
-  //   if(!tokenDetails){
-  //     throw new NotFoundException('Token Not Found');
-  //   }
-  //   return {tokenDetails, statusCode: 200};
-  // }
+  async brandToken(userId: number) {
+    const brand = await this.databaseservice.brand.findUnique({
+      where: {
+        brandRepId: userId,
+      },
+    });
+    const brandId = brand.brandId;
+    const tokenDetails = await this.databaseservice.brandTokens.findUnique({
+      where: {
+        brandId: brandId,
+      },
+    });
+    if (!tokenDetails) {
+      throw new NotFoundException('Token Not Found');
+    }
+    return { tokenDetails, statusCode: 200 };
+  }
 
   // getIDAmountBySymbol(data, symbol) {
   //   const coins = data.data.coins;
@@ -38,23 +47,57 @@ export class LoyaltyService {
   // }
 
   async manage(userId: number) {
-    const res = await this.databaseservice.user.findUnique({
+    // const res = await this.databaseservice.user.findUnique({
+    //   where: {
+    //     userId: userId,
+    //   },
+    //   include: {
+    //     brand: {
+    //       include: {
+    //         BrandTokens: {
+    //           include: {
+    //             IssuedPoints: true,
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    // });
+    // return { res, statusCode: 200 };
+    const brand = await this.databaseservice.brand.findUnique({
       where: {
-        userId: userId,
+        brandRepId: userId,
       },
       include: {
-        brand: {
+        BrandTokens: {
           include: {
-            BrandTokens: {
-              include: {
-                IssuedPoints: true,
-              },
-            },
+            IssuedPoints: true,
           },
         },
       },
     });
-    return { res, statusCode: 200 };
+    // const brandId = brand.brandId;
+    // const brandTokens = await this.databaseservice.brandTokens.findUnique({
+    //   where: {
+    //     brandId: brandId,
+    //   },
+    //   include:{
+    //     IssuedPoints:true
+    //   }
+    // });
+    // if (!brandTokens) {
+    //   throw new NotFoundException('Brand Token Not Found');
+    // }
+    // const brandTokenId = brandTokens.brandTokenId;
+    // const issuedPoints = await this.databaseservice.issuedPoints.findMany({
+    //   where: {
+    //     brandTokenId: brandTokenId,
+    //   },
+    // });
+    if (!brand) {
+      throw new NotFoundException('Brand Not Found');
+    }
+    return { brand, statusCode: 200 };
   }
 
   async issue(userId: number, email: string, IssueDto: IssueDto) {
@@ -155,87 +198,241 @@ export class LoyaltyService {
     //   },
     // });
 
-    const brandId=brand.brandId;
-    const brandToken=await this.databaseservice.brandTokens.findUnique({
-      where:{
-        brandId:brandId
-      }
-    });
-    if(!brandToken){
-      await this.databaseservice.brandTokens.create({
-        data:{
-          brand:{
-            connect:{
-              brandId:brandId
-            }
+     const brandId = brand.brandId;
+    // const brandToken = await this.databaseservice.brandTokens.findUnique({
+    //   where: {
+    //     brandId: brandId,
+    //   },
+    // });
+    // if (!brandToken) {
+    //   await this.databaseservice.brandTokens.create({
+    //     data: {
+    //       brand: {
+    //         connect: {
+    //           brandId: brandId,
+    //         },
+    //       },
+    //       pointName: IssueDto.pointName,
+    //       symbol: IssueDto.symbol,
+    //     },
+    //   });
+    // }
+    const brandToken=this.define(userId,IssueDto);
+    const issuedPoint=await this.databaseservice.issuedPoints.create({
+      data: {
+        brandTokens: {
+          connect: {
+            brandId: brandId,
           },
-          pointName:IssueDto.pointName,
-          symbol:IssueDto.symbol
-        }
-      });
-    }
-    await this.databaseservice.issuedPoints.create({
-      data:{
-        brandTokens:{
-          connect:{
-            brandId:brandId
-          }
         },
-        totalSupply:IssueDto.totalSupply,
-        transactionId:details.data.details.TxID,
-        assetId:details.data.details.AssetID,
-      }
+        totalSupply: IssueDto.totalSupply,
+        transactionId: details.data.details.TxID,
+        assetId: details.data.details.AssetID,
+      },
     });
-    return { details, statusCode: 200 };
+    return { pontName:IssueDto.pointName,symbol:IssueDto.symbol,issuedPoint, statusCode: 200 };
   }
 
-  async distribute(userId:number,DistributeDto:DistributeDto){
-    const issuedPoints=await this.databaseservice.issuedPoints.findUnique({
-      where:{
-        issuedPointId:DistributeDto.issuedPointId
-      }
+  async distribute(userId: number, DistributeDto: DistributeDto) {
+    const issuedPoints = await this.databaseservice.issuedPoints.findUnique({
+      where: {
+        issuedPointId: DistributeDto.issuedPointId,
+      },
     });
-    if(!issuedPoints){
+    if (!issuedPoints) {
       throw new NotFoundException('Issued Points Not Found');
     }
-    if(issuedPoints.totalSupply<DistributeDto.amount){
+    if (issuedPoints.totalSupply < DistributeDto.amount) {
       throw new NotFoundException('Insufficient Points');
     }
     await this.databaseservice.transactions.create({
-      data:{
-        IssuedPoints:{
-          connect:{
-            issuedPointId:DistributeDto.issuedPointId
-          }
+      data: {
+        IssuedPoints: {
+          connect: {
+            issuedPointId: DistributeDto.issuedPointId,
+          },
         },
-        amount:DistributeDto.amount,
-        transactionType:'DEBIT',
-        recipientAddress:DistributeDto.recipientAddress,
-        status:'COMPLETED',
-        transactionHash:'string'
-      }
+        amount: DistributeDto.amount,
+        transactionType: 'DEBIT',
+        recipientAddress: DistributeDto.recipientAddress,
+        status: 'COMPLETED',
+        transactionHash: 'string',
+      },
     });
   }
 
-  async transactions(userId:number){
-    const transactions=await this.databaseservice.user.findUnique({
-      where:{userId:userId},
+  async transactions(userId: number) {
+    const tokenDetails = await this.brandToken(userId);
+    const brandTokenId = tokenDetails.tokenDetails.brandTokenId;
+    const transactions = await this.databaseservice.issuedPoints.findMany({
+      where: { brandTokenId: brandTokenId },
       include:{
-        brand:{
-          include:{
-            BrandTokens:{
-              include:{
-                IssuedPoints:{
-                  include:{
-                    Transactions:true
-                  }
-                }
-              }
-            }
-          }
-        }
+        Transactions:true
       }
     });
-    return {transactions, statusCode: 200};
+    return { transactions, statusCode: 200 };
+  }
+
+  async define(userId:number,DefineDto:DefineDto){
+    const brand = await this.brandService.findBrand(userId);
+    if (!brand) {
+      throw new NotFoundException('Brand Not Found');
+    }
+    const brandId = brand.brandId;
+    let brandToken = await this.databaseservice.brandTokens.findUnique({
+      where: {
+        brandId: brandId,
+      },
+    });
+    if (!brandToken) {
+      brandToken=await this.databaseservice.brandTokens.create({
+        data: {
+          brand: {
+            connect: {
+              brandId: brandId,
+            },
+          },
+          pointName: DefineDto.pointName,
+          symbol: DefineDto.symbol,
+        },
+      });
+    }
+    return {brandToken,statusCode:200};
+  }
+  
+  async issueV2(userId:number,email:string,IssueV2Dto:IssueV2Dto){
+    const brand = await this.brandService.findBrand(userId);
+    if (!brand) {
+      throw new NotFoundException('Brand Not Found');
+    }
+    const brandName = brand.brandName;
+    const tokenDetails=await this.brandToken(userId);
+    const tokenName=tokenDetails.tokenDetails.pointName;
+    const tokenSymbol=tokenDetails.tokenDetails.symbol;
+    console.log(IssueDto);
+    const bodyData = {
+      data: {},
+      decimals: 0,
+      description: 'Coalition Loyalty Points',
+      image: 'string',
+      name: tokenName,
+      properties: {
+        issuer: {
+          email: email,
+          governingLaw: 'India',
+          issuerCountry: 'India',
+          jurisdiction: 'India',
+          legalForm: 'Limited',
+          organisation: brandName,
+        },
+        legal: {
+          licenceId: 'stastoken.com',
+          terms:
+            'STAS, Inc. retains all rights to the token script.  Use is subject to terms at https://stastoken.com/license.',
+        },
+        meta: {
+          legal: {
+            terms: 'Your token terms and description.',
+          },
+          media: [
+            {
+              URI: 'string',
+              altURI: 'string',
+              type: 'string',
+            },
+          ],
+          schemaId: 'STAS1.0',
+          website: 'string',
+        },
+      },
+      protocolId: 'STAS',
+      satsPerToken: 1,
+      splitable: true,
+      symbol: tokenSymbol,
+      totalSupply: IssueV2Dto.totalSupply,
+    };
+    console.log(IssueV2Dto.neucron_token);
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: IssueV2Dto.neucron_token,
+      'User-Agent': 'axios/1.7.2',
+    };
+    const res = await this.http
+      .post('https://dev.neucron.io/v1/stas/mint', bodyData, { headers })
+      .pipe(map((res) => res.data))
+      .pipe(
+        catchError((err) => {
+          throw new NotFoundException(err);
+        }),
+      );
+
+    const details = await lastValueFrom(res);
+
+    // const token = await this.databaseservice.brandTokens.findUnique({
+    //   where: {
+    //     userId: userId,
+    //   },
+    // });
+    // if (!token) {
+    //   await this.databaseservice.brandTokens.create({
+    //     data: {
+    //       user: {
+    //         connect: {
+    //           userId: userId,
+    //           email: email,
+    //         },
+    //       },
+    //       pointName: IssueDto.pointName,
+    //       symbol: IssueDto.symbol,
+    //     },
+    //   });
+    // }
+    // await this.databaseservice.issuedPoints.create({
+    //   data: {
+    //     user: {
+    //       connect: {
+    //         userId: userId,
+    //       },
+    //     },
+
+    //     pointName: IssueDto.pointName,
+    //     symbol: IssueDto.symbol,
+    //     totalSupply: IssueDto.totalSupply,
+    //   },
+    // });
+
+     const brandId = brand.brandId;
+    // const brandToken = await this.databaseservice.brandTokens.findUnique({
+    //   where: {
+    //     brandId: brandId,
+    //   },
+    // });
+    // if (!brandToken) {
+    //   await this.databaseservice.brandTokens.create({
+    //     data: {
+    //       brand: {
+    //         connect: {
+    //           brandId: brandId,
+    //         },
+    //       },
+    //       pointName: IssueDto.pointName,
+    //       symbol: IssueDto.symbol,
+    //     },
+    //   });
+    // }
+    //const brandToken=this.define(userId,IssueV2Dto);
+    const issuedPoint=await this.databaseservice.issuedPoints.create({
+      data: {
+        brandTokens: {
+          connect: {
+            brandId: brandId,
+          },
+        },
+        totalSupply: IssueV2Dto.totalSupply,
+        transactionId: details.data.details.TxID,
+        assetId: details.data.details.AssetID,
+      },
+    });
+    return { pontName:tokenName,symbol:tokenSymbol,issuedPoint, statusCode: 200 };
   }
 }
