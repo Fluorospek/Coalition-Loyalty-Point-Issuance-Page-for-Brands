@@ -65,7 +65,7 @@
 			showPopup = true;
 			successPopup = true;
 
-			dispatch('brandsetupPopup', { success: true, message: 'Brand setup successful!' });
+			dispatch('createPopup', { success: true, message: 'Brand setup successful!' });
 
 			// Optionally, redirect to the next page after a delay
 			setTimeout(() => {
@@ -76,7 +76,7 @@
 			console.error('Error setting up brand:', error);
 			showPopup = true;
 			successPopup = false;
-			dispatch('brandsetupPopup', {
+			dispatch('createPopup', {
 				success: false,
 				message: 'Error setting up brand. Please try again.'
 			});
