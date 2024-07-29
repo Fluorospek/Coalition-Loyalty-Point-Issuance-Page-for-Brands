@@ -182,7 +182,9 @@ export class LoyaltyService {
             brandId:brandId
           }
         },
-        totalSupply:IssueDto.totalSupply
+        totalSupply:IssueDto.totalSupply,
+        transactionId:details.transactionId,
+        assetId:details.assetId,
       }
     });
     return { details, statusCode: 200 };
@@ -210,7 +212,8 @@ export class LoyaltyService {
         amount:DistributeDto.amount,
         transactionType:'DEBIT',
         recipientAddress:DistributeDto.recipientAddress,
-        status:'COMPLETED'
+        status:'COMPLETED',
+        transactionHash:'string'
       }
     });
   }
