@@ -1,48 +1,48 @@
 <script>
-    import { goto } from '$app/navigation';
-    import { writable } from 'svelte/store';
+	import { goto } from '$app/navigation';
+	import { writable } from 'svelte/store';
 
-    // Local state
-    let name = '';
-    let email = '';
-    let password = '';
-    let confirmPassword = '';
-    let error = '';
-    let isSubmitting = writable(false);
+	// Local state
+	let name = '';
+	let email = '';
+	let password = '';
+	let confirmPassword = '';
+	let error = '';
+	let isSubmitting = writable(false);
 
-    // Function to handle form submission
-    async function handleRegister() {
-        if (password !== confirmPassword) {
-            error = 'Passwords do not match';
-            return;
-        }
+	// Function to handle form submission
+	async function handleRegister() {
+		if (password !== confirmPassword) {
+			error = 'Passwords do not match';
+			return;
+		}
 
-        isSubmitting.set(true);
-        error = '';
+		isSubmitting.set(true);
+		error = '';
 
-        try {
-            const response = await fetch('http://localhost:3000/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name, email, password })
-            });
+		try {
+			const response = await fetch('http://localhost:3000/auth/register', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name, email, password })
+			});
 
-            if (response.ok) {
-                const result = await response.json();
-                // Optionally handle result, like redirecting
-                goto('/login'); // Redirect to login page after successful registration
-            } else {
-                const result = await response.json();
-                error = result.message || 'Registration failed';
-            }
-        } catch (err) {
-            error = 'Registration failed';
-        } finally {
-            isSubmitting.set(false);
-        }
-    }
+			if (response.ok) {
+				const result = await response.json();
+				// Optionally handle result, like redirecting
+				goto('/login'); // Redirect to login page after successful registration
+			} else {
+				const result = await response.json();
+				error = result.message || 'Registration failed';
+			}
+		} catch (err) {
+			error = 'Registration failed';
+		} finally {
+			isSubmitting.set(false);
+		}
+	}
 </script>
 
 <section class="bg-gray-50 dark:bg-gray-900">
