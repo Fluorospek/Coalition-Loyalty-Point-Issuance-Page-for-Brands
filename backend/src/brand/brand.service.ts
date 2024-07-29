@@ -9,7 +9,7 @@ export class BrandService {
     async findBrand(userId:number){
         const brand=await this.dataservice.brand.findFirst({
             where:{
-                userId:userId
+                brandRepId:userId
             }
         })
         return brand;

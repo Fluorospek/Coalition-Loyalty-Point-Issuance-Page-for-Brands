@@ -49,6 +49,8 @@ model BrandTokens {
 model IssuedPoints {
   issuedPointId Int      @id @default(autoincrement())
   brandTokenId  Int
+  assetId       String   @unique
+  transactionId Int
   totalSupply   Int
   createdAt     DateTime @default(now())
 
@@ -63,6 +65,7 @@ model Transactions {
   transactionType  TransType
   date             DateTime  @default(now())
   recipientAddress String?
+  transactionHash  String
   status           Status
 
   IssuedPoints IssuedPoints @relation(fields: [issuedPointId], references: [issuedPointId])
