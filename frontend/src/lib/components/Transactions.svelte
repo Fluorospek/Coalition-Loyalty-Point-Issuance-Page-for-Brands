@@ -65,3 +65,95 @@
 		>
 	</div>
 </div>
+<!-- <script>
+	import { writable } from 'svelte/store';
+	import { token, isAuthenticated } from '../api/api';
+	import { login, fetchTokens } from '../api/wallet';
+	import { onMount } from 'svelte';
+  
+	let tokens = writable([]);
+	let error = writable(null);
+	let loginError = writable(null);
+  
+	// Default credentials
+	const email = 'agarwal8789@gmail.com';
+	const password = 'Ganna@123';
+  
+	async function handleLogin() {
+	  try {
+		const neucronToken = await login(email, password);
+		token.set(neucronToken);
+		// Fetch tokens after successful login
+		const fetchedTokens = await fetchTokens(neucronToken);
+		tokens.set(fetchedTokens);
+	  } catch (err) {
+		loginError.set(err.message);
+	  }
+	}
+  
+	onMount(() => {
+	  if (!$isAuthenticated) {
+		handleLogin();
+	  } else {
+		// Fetch tokens if already authenticated
+		fetchTokens($token)
+		  .then(fetchedTokens => tokens.set(fetchedTokens))
+		  .catch(err => error.set(err.message));
+	  }
+	});
+  </script>
+  
+  {#if $loginError}
+	<p class="error">Login Error: {$loginError}</p>
+  {:else if !$isAuthenticated}
+	<p>Logging in automatically...</p>
+  {:else}
+	{#if $error}
+	  <p class="error">Error fetching tokens: {$error}</p>
+	{:else}
+	  <table>
+		<thead>
+		  <tr>
+			<th>Address</th>
+			<th>Redeem Address</th>
+			<th>Symbol</th>
+			<th>Transaction ID</th>
+			<th>Index</th>
+			<th>Amount</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  {#each $tokens as token}
+			{#each token.utxos as utxo}
+			  <tr>
+				<td>{token.address}</td>
+				<td>{utxo.redeemAddr}</td>
+				<td>{utxo.symbol}</td>
+				<td>{utxo.txid}</td>
+				<td>{utxo.index}</td>
+				<td>{utxo.amount}</td>
+			  </tr>
+			{/each}
+		  {/each}
+		</tbody>
+	  </table>
+	{/if}
+  {/if}
+  
+  <style>
+	table {
+	  width: 100%;
+	  border-collapse: collapse;
+	}
+	th, td {
+	  border: 1px solid #ddd;
+	  padding: 8px;
+	}
+	th {
+	  background-color: #f2f2f2;
+	  text-align: left;
+	}
+	.error {
+	  color: red;
+	}
+  </style> -->

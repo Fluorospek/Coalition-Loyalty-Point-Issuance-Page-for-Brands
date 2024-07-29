@@ -1,4 +1,4 @@
-<script lang="ts">
+<script >
 	import { createEventDispatcher } from 'svelte';
 	let LoyaltyParameters = {
 		loyaltypointname: '',

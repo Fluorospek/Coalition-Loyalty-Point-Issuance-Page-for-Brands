@@ -3,10 +3,9 @@ import { browser } from '$app/environment';
 
 // Token store
 export const token = writable(browser ? localStorage.getItem('token') : null);
-
 // Authentication state store
 export const isAuthenticated = writable(browser ? !!localStorage.getItem('token') : false);
-
+// Authentication state store
 // Update token and authentication state
 token.subscribe(value => {
     if (browser) {
@@ -19,6 +18,8 @@ token.subscribe(value => {
         }
     }
 });
+// Update token and authentication state
+
 
 // Logout function
 export function logout() {
