@@ -20,6 +20,8 @@ token.subscribe(value => {
     }
 });
 
+
+
 // Logout function
 export function logout() {
     token.set(null);
