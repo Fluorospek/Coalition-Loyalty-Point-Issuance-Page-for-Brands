@@ -22,12 +22,17 @@
 	import Transactions from '../../../lib/components/Transactions.svelte';
 	import DistributePoints from '../../../lib/components/DistributePoints.svelte';
 	import PopupModal from '../../../lib/components/PopupModal.svelte';
+	import Wallet from '../../../lib/components/Wallet.svelte';
 
 	let mainContent = BrandSetup;
 	let sidebarItems = [
 		{
 			title: 'Brand Profile Setup',
 			component: BrandSetup
+		},
+		{
+			title: 'Wallet Sigin',
+			component: Wallet
 		},
 		{
 			title: 'Loyalty Point Issuance',
