@@ -3,7 +3,6 @@ import { LoyaltyService } from './loyalty.service';
 import { ApiBearerAuth, ApiOperation, ApiTags} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
 import { IssueDto } from './dto/issue.dto';
-import { ManageDto } from './dto/manage.dto';
 
 @ApiTags('Loyalty')
 @Controller('loyalty')
@@ -14,9 +13,9 @@ export class LoyaltyController {
   @UseGuards(JwtAuthGuard)
   @Get('manage')
   @ApiOperation({description:"Brand Representative lists issued loyalty points",summary:"List Loyalty Points issued"})
-  async manage(@Req() req, @Body() ManageDto:ManageDto){
+  async manage(@Req() req){
     const userId=req.user.userId;
-    return await this.loyaltyService.manage(userId,ManageDto);
+    return await this.loyaltyService.manage(userId);
   }
 
   @ApiBearerAuth()
