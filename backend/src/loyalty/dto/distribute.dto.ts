@@ -1,19 +1,19 @@
 import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 
-export class IssueDto{
+export class DistributeDto{
     @IsString()
     @IsNotEmpty()
-    neucron_token:string
-
-    @IsString()
-    @IsNotEmpty()
-    pointName:string
-
-    @IsString()
-    @IsNotEmpty()
-    symbol:string
+    access_token:string
 
     @IsNumber()
     @IsNotEmpty()
-    totalSupply:number
+    issuedPointId:number
+
+    @IsString()
+    @IsNotEmpty()
+    recipientAddress:string
+
+    @IsNumber()
+    @IsNotEmpty()
+    amount:number
 }
