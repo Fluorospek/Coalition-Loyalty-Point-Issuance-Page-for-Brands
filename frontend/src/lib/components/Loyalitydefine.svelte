@@ -42,7 +42,7 @@
 
 		try {
 			const response = await axios.post(
-				'https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/define',
+				'http://localhost:3000/loyalty/define',
 				{
 					pointName,
 					symbol
