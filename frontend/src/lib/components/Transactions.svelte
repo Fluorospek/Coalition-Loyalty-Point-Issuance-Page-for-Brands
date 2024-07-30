@@ -31,7 +31,7 @@
 
 	async function fetchTransactions() {
 		try {
-			const response = await axios.get('http://localhost:3000/loyalty/transactions', {
+			const response = await axios.get('https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/transactions', {
 				headers: {
 					Authorization: `Bearer ${jwt}`
 				}

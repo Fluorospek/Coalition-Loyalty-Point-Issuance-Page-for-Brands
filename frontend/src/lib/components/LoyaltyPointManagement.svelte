@@ -36,7 +36,7 @@
 
 	async function fetchBrandData() {
 		try {
-			const response = await axios.get('http://localhost:3000/loyalty/manage', {
+			const response = await axios.get('https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/manage', {
 				headers: {
 					Authorization: `Bearer ${jwt}`
 				}

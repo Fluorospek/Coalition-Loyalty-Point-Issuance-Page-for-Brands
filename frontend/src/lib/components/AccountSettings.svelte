@@ -12,7 +12,7 @@
 
 	async function fetchBrandDetails() {
 		try {
-			const response = await axios.get('http://localhost:3000/brand/details', {
+			const response = await axios.get('https://coalition-loyalty-point-issuance-page.onrender.com/brand/details', {
 				headers: {
 					Authorization: `Bearer ${get(token)}`
 				}
@@ -30,7 +30,7 @@
 
 	async function fetchUserProfile() {
 		try {
-			const response = await axios.get('http://localhost:3000/user/profile', {
+			const response = await axios.get('https://coalition-loyalty-point-issuance-page.onrender.com/user/profile', {
 				headers: {
 					Authorization: `Bearer ${get(token)}`
 				}

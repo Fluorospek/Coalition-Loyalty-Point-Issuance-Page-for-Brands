@@ -42,7 +42,7 @@
 
 		try {
 			const response = await axios.post(
-				'http://localhost:3000/brand/setup',
+				'https://coalition-loyalty-point-issuance-page.onrender.com/brand/setup',
 				{
 					brandName,
 					description

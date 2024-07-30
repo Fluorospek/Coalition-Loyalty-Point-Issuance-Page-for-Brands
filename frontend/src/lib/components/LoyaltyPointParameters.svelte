@@ -40,7 +40,7 @@
 
 		try {
 			const response = await axios.post(
-				'http://localhost:3000/loyalty/issue-v2',
+				'https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/issue-v2',
 				{
 					neucron_token: neucronToken,
 					totalSupply: Number(totalSupply) // Convert totalSupply to a number
