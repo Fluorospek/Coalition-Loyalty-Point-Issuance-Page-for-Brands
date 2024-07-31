@@ -1,7 +1,7 @@
 <section class="bg-white dark:bg-gray-900 pt-30">
 	<div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16 lg:px-12">
 		<a
-			href="https://www.youtube.com/watch?v=Fd_JKZ8Ucdo"
+			href="https://coalition-loyalty-point-issuance-page-for-brands.vercel.app/register"
 			class="inline-flex justify-between items-center py-1 px-1 pr-4 mb-7 text-sm text-gray-700 bg-gray-100 rounded-full dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700"
 		>
 			<span class="text-xs bg-primary-600 rounded-full text-white px-4 py-1.5 mr-3"
@@ -51,7 +51,7 @@
 				>
 			</a>
 			<a
-				href="https://coalition-loyalty-point-issuance-page.onrender.com/auth/register/Swagger"
+				href="https://coalition-loyalty-point-issuance-page-for-brands.vercel.app/register"
 				class="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
 			>
 				Project Link →
