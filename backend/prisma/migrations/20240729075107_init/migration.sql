@@ -1,8 +1,8 @@
 -- CreateEnum
-CREATE TYPE "TransType" AS ENUM ('DEBIT', 'CREDIT');
+CREATE TYPE "TransType" AS ENUM('DEBIT', 'CREDIT');
 
 -- CreateEnum
-CREATE TYPE "Status" AS ENUM ('PENDING', 'COMPLETED', 'FAILED');
+CREATE TYPE "Status" AS ENUM( 'PENDING', 'COMPLETED', 'FAILED' );
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -12,8 +12,8 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("userId")
-);
+
+CONSTRAINT "User_pkey" PRIMARY KEY ("userId") );
 
 -- CreateTable
 CREATE TABLE "Brand" (
@@ -24,8 +24,8 @@ CREATE TABLE "Brand" (
     "otherDetails" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Brand_pkey" PRIMARY KEY ("brandId")
-);
+
+CONSTRAINT "Brand_pkey" PRIMARY KEY ("brandId") );
 
 -- CreateTable
 CREATE TABLE "BrandTokens" (
@@ -35,8 +35,8 @@ CREATE TABLE "BrandTokens" (
     "symbol" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "BrandTokens_pkey" PRIMARY KEY ("brandTokenId")
-);
+
+CONSTRAINT "BrandTokens_pkey" PRIMARY KEY ("brandTokenId") );
 
 -- CreateTable
 CREATE TABLE "IssuedPoints" (
@@ -47,8 +47,8 @@ CREATE TABLE "IssuedPoints" (
     "totalSupply" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "IssuedPoints_pkey" PRIMARY KEY ("issuedPointId")
-);
+
+CONSTRAINT "IssuedPoints_pkey" PRIMARY KEY ("issuedPointId") );
 
 -- CreateTable
 CREATE TABLE "Transactions" (
@@ -61,32 +61,39 @@ CREATE TABLE "Transactions" (
     "transactionHash" TEXT NOT NULL,
     "status" "Status" NOT NULL,
 
-    CONSTRAINT "Transactions_pkey" PRIMARY KEY ("transactionId")
-);
+
+CONSTRAINT "Transactions_pkey" PRIMARY KEY ("transactionId") );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "User_email_key" ON "User" ("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Brand_brandRepId_key" ON "Brand"("brandRepId");
+CREATE UNIQUE INDEX "Brand_brandRepId_key" ON "Brand" ("brandRepId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BrandTokens_brandId_key" ON "BrandTokens"("brandId");
+CREATE UNIQUE INDEX "BrandTokens_brandId_key" ON "BrandTokens" ("brandId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "IssuedPoints_assetId_key" ON "IssuedPoints"("assetId");
+CREATE UNIQUE INDEX "IssuedPoints_assetId_key" ON "IssuedPoints" ("assetId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "IssuedPoints_transactionId_key" ON "IssuedPoints"("transactionId");
+CREATE UNIQUE INDEX "IssuedPoints_transactionId_key" ON "IssuedPoints" ("transactionId");
 
 -- AddForeignKey
-ALTER TABLE "Brand" ADD CONSTRAINT "Brand_brandRepId_fkey" FOREIGN KEY ("brandRepId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Brand"
+ADD CONSTRAINT "Brand_brandRepId_fkey" FOREIGN KEY ("brandRepId") REFERENCES "User" ("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "BrandTokens" ADD CONSTRAINT "BrandTokens_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand"("brandId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "BrandTokens"
+ADD CONSTRAINT "BrandTokens_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand" ("brandId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "IssuedPoints" ADD CONSTRAINT "IssuedPoints_brandTokenId_fkey" FOREIGN KEY ("brandTokenId") REFERENCES "BrandTokens"("brandTokenId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "IssuedPoints"
+ADD CONSTRAINT "IssuedPoints_brandTokenId_fkey" FOREIGN KEY ("brandTokenId") REFERENCES "BrandTokens" ("brandTokenId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transactions" ADD CONSTRAINT "Transactions_issuedPointId_fkey" FOREIGN KEY ("issuedPointId") REFERENCES "IssuedPoints"("issuedPointId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Transactions"
+ADD CONSTRAINT "Transactions_issuedPointId_fkey" FOREIGN KEY ("issuedPointId") REFERENCES "IssuedPoints" ("issuedPointId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE "IssuedPoints"
+ADD COLUMN "totalIssued" INTEGER NOT NULL DEFAULT 0;

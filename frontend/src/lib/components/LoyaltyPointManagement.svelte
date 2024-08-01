@@ -78,8 +78,16 @@
 						</tr>
 						{#each brandData.BrandTokens.IssuedPoints as issuedPoint}
 							<tr class="bg-gray-800 border-b border-gray-700">
+								<td class="px-6 py-4">Issued Point ID</td>
+								<td class="px-6 py-4">{issuedPoint.issuedPointId}</td>
+							</tr>
+							<tr class="bg-gray-800 border-b border-gray-700">
 								<td class="px-6 py-4">Total Supply</td>
 								<td class="px-6 py-4">{issuedPoint.totalSupply}</td>
+							</tr>
+							<tr class="bg-gray-800 border-b border-gray-700">
+								<td class="px-6 py-4">Total Issued</td>
+								<td class="px-6 py-4">{issuedPoint.totalIssued}</td>
 							</tr>
 							<tr class="bg-gray-800 border-b border-gray-700">
 								<td class="px-6 py-4">Transaction ID</td>

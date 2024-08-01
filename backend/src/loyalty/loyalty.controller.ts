@@ -60,7 +60,7 @@ export class LoyaltyController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @Post('issue-v2')
+  @Post('issue/v2')
   @ApiOperation({description:"Brand Representative can issue Loyalty points",summary:"Issue Loyalty Points"})
   async issueV2(@Req() req,@Body() IssueV2Dto:IssueV2Dto){
     const userId=req.user.userId;
