@@ -257,7 +257,7 @@ export class LoyaltyService {
     const assetId = issuedPoints.assetId;
     console.log(assetId);
     const bodyData = {
-      assetId: assetId,
+      assetID: assetId,
       amount: DistributeDto.amount,
       destinationPaymail: DistributeDto.recipientAddress,
     };
@@ -268,7 +268,7 @@ export class LoyaltyService {
     };
     const res = await lastValueFrom(
       this.http
-        .post('https://dev.neucron.io/v1/stas/transfer', bodyData, { headers })
+        .post(`https://dev.neucron.io/v1/stas/transfer?assetID=${assetId}&destinationPaymail=${DistributeDto.recipientAddress}`, bodyData, { headers })
         .pipe(map((res) => res.data))
         .pipe(
           catchError((err) => {
