@@ -75,10 +75,15 @@ export class LoyaltyService {
       include: {
         BrandTokens: {
           include: {
-            IssuedPoints: true,
+            IssuedPoints: {
+              orderBy:{
+                issuedPointId:'asc',
+              }
+            },
           },
         },
       },
+      
     });
     // const brandId = brand.brandId;
     // const brandTokens = await this.databaseservice.brandTokens.findUnique({
@@ -230,6 +235,7 @@ export class LoyaltyService {
           },
         },
         totalSupply: IssueDto.totalSupply,
+        totalIssued: IssueDto.totalSupply,
         transactionId: details.data.details.TxID,
         assetId: details.data.details.AssetID,
       },
@@ -309,7 +315,11 @@ export class LoyaltyService {
     const transactions = await this.databaseservice.issuedPoints.findMany({
       where: { brandTokenId: brandTokenId },
       include: {
-        Transactions: true,
+        Transactions: {
+          orderBy: {
+            date: 'desc',
+          },
+        },
       },
     });
     return {
@@ -477,6 +487,7 @@ export class LoyaltyService {
           },
         },
         totalSupply: IssueV2Dto.totalSupply,
+        totalIssued: IssueV2Dto.totalSupply,
         transactionId: details.data.details.TxID,
         assetId: details.data.details.AssetID,
       },

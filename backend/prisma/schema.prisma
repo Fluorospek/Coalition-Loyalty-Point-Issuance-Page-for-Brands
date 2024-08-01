@@ -52,6 +52,7 @@ model IssuedPoints {
   assetId       String   @unique
   transactionId String   @unique
   totalSupply   Int
+  totalIssued   Int
   createdAt     DateTime @default(now())
 
   brandTokens  BrandTokens    @relation(fields: [brandTokenId], references: [brandTokenId])
