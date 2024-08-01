@@ -5,6 +5,7 @@ import { JwtAuthGuard } from 'src/auth/auth.guard';
 import { IssueDto } from './dto/issue.dto';
 import { DefineDto } from './dto/define.dto';
 import { IssueV2Dto } from './dto/issuev2.dto';
+import { DistributeDto } from './dto/distribute.dto';
 
 @ApiTags('Loyalty')
 @Controller('loyalty')
@@ -65,5 +66,14 @@ export class LoyaltyController {
     const userId=req.user.userId;
     const email=req.user.email;
     return await this.loyaltyService.issueV2(userId,email,IssueV2Dto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('distribute')
+  @ApiOperation({description:"Brand Representative can send Loyalty points to the recievers paymail",summary:"Distribute Loyalty Points"})
+  async distribute(@Req() req,@Body() DistributeDto:DistributeDto){
+    const userId=req.user.userId;
+    return await this.loyaltyService.distribute(userId,DistributeDto);
   }
 }

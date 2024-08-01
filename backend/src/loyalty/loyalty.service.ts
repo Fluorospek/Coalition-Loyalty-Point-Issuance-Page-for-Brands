@@ -254,6 +254,28 @@ export class LoyaltyService {
     if (issuedPoints.totalSupply < DistributeDto.amount) {
       throw new NotFoundException('Insufficient Points');
     }
+    const assetId = issuedPoints.assetId;
+    console.log(assetId);
+    const bodyData = {
+      assetId: assetId,
+      amount: DistributeDto.amount,
+      destinationPaymail: DistributeDto.recipientAddress,
+    };
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: DistributeDto.access_token,
+      'User-Agent': 'axios/1.7.2',
+    };
+    const res = await lastValueFrom(
+      this.http
+        .post('https://dev.neucron.io/v1/stas/transfer', bodyData, { headers })
+        .pipe(map((res) => res.data))
+        .pipe(
+          catchError((err) => {
+            throw new NotFoundException(err);
+          }),
+        ),
+    );
     await this.databaseservice.transactions.create({
       data: {
         IssuedPoints: {
@@ -268,6 +290,17 @@ export class LoyaltyService {
         transactionHash: 'string',
       },
     });
+    await this.databaseservice.issuedPoints.update({
+      where: {
+        issuedPointId: DistributeDto.issuedPointId,
+      },
+      data: {
+        totalSupply: {
+          decrement: DistributeDto.amount,
+        },
+      },
+    });
+    return { res, statusCode: 200 };
   }
 
   async transactions(userId: number) {
