@@ -39,8 +39,13 @@
 		event.preventDefault();
 
 		try {
+			console.log('Request Payload:', {
+				neucron_token: neucronToken,
+				totalSupply: Number(totalSupply)
+			});
+
 			const response = await axios.post(
-				'https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/issue/v2',
+				'https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/issue-v2',
 				{
 					neucron_token: neucronToken,
 					totalSupply: Number(totalSupply) // Convert totalSupply to a number
@@ -52,8 +57,10 @@
 				}
 			);
 
+			console.log('Response Data:', response.data);
+
 			// Handle the successful response
-			responseData = response.data; // Assuming the response is an array of objects
+			responseData = response.data.issuedPoint ? [response.data.issuedPoint] : [];
 			successMessage = 'Loyalty points issued successfully!';
 			popupmessage = successMessage;
 			errorMessage = '';
@@ -136,13 +143,13 @@
 						{#each responseData as data}
 							<tr>
 								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-									{data.id}
+									{data.issuedPointId}
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-									{data.amount}
+									{data.totalSupply}
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-									{data.date}
+									{new Date(data.createdAt).toLocaleString()}
 								</td>
 							</tr>
 						{/each}
