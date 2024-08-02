@@ -3,10 +3,19 @@
 	import { goto } from '$app/navigation';
 	import axios from 'axios';
 	import { onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	let jwt = null;
 	let neucronToken = '';
 	let totalSupply = ''; // Initialize as an empty string for dynamic input
+	let responseData = []; // To store response data
+	let successMessage = '';
+	let errorMessage = '';
+	let showPopup = false;
+	let successPopup = false;
+	let popupmessage = '';
+
+	const dispatch = createEventDispatcher();
 
 	// Subscribe to token store
 	jwtToken.subscribe((value) => {
@@ -35,7 +44,7 @@
 				totalSupply: Number(totalSupply)
 			});
 
-			await axios.post(
+			const response = await axios.post(
 				'https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/issue-v2',
 				{
 					neucron_token: neucronToken,
@@ -48,9 +57,23 @@
 				}
 			);
 
-			console.log('Loyalty points issued successfully.');
+			console.log('Response Data:', response.data);
+
+			// Handle the successful response
+			responseData = response.data.issuedPoint ? [response.data.issuedPoint] : [];
+			successMessage = 'Loyalty points issued successfully!';
+			popupmessage = successMessage;
+			errorMessage = '';
+			showPopup = true;
+			successPopup = true;
 		} catch (error) {
+			// Handle errors
 			console.error('Error issuing loyalty points:', error);
+			successMessage = '';
+			showPopup = true;
+			successPopup = false;
+			popupmessage = 'Error issuing loyalty points. Please try again.';
+			errorMessage = 'Error issuing loyalty points. Please try again.';
 		}
 	}
 </script>
@@ -95,6 +118,44 @@
 					Issue Loyalty Points
 				</button>
 			</form>
+			{#if successMessage}
+				<p class="mt-4 text-green-500">{successMessage}</p>
+			{/if}
+			{#if errorMessage}
+				<p class="mt-4 text-red-500">{errorMessage}</p>
+			{/if}
+			{#if responseData.length > 0}
+				<table class="mt-4 min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+					<thead class="bg-gray-50 dark:bg-gray-800">
+						<tr>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+								ID
+							</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+								Amount
+							</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+								Date
+							</th>
+						</tr>
+					</thead>
+					<tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
+						{#each responseData as data}
+							<tr>
+								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+									{data.issuedPointId}
+								</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+									{data.totalSupply}
+								</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+									{new Date(data.createdAt).toLocaleString()}
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/if}
 		{/if}
 	</div>
 </section>
