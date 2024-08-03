@@ -1,46 +1,31 @@
 <script>
     import { writable } from 'svelte/store';
-    import { goto } from '$app/navigation';
+    import axios from 'axios';
 
-    // Local state
-    let name = '';
     let email = '';
     let password = '';
-    let confirmPassword = '';
-    let error = '';
-    let isSubmitting = writable(false);
+    let name = '';
 
-    // Function to handle form submission
-    async function handleRegister() {
-        if (password !== confirmPassword) {
-            error = 'Passwords do not match';
-            return;
-        }
+    let error = writable(null);
+    let success = writable(null);
 
-        isSubmitting.set(true);
-        error = '';
-
+    async function register() {
         try {
-            const response = await fetch('https://coalition-loyalty-point-issuance-page.onrender.com/auth/coalition/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name, email, password })
+            const response = await axios.post('https://coalition-loyalty-point-issuance-page.onrender.com/auth/coalition/register', {
+                email,
+                password,
+                name
             });
 
-            if (response.ok) {
-                const result = await response.json();
-                // Optionally handle result, like redirecting
-                goto('/coalitionlogin'); // Redirect to login page after successful registration
+            if (response.status === 200) {
+                success.set('Registration successful');
+                error.set(null);
             } else {
-                const result = await response.json();
-                error = result.message || 'Registration failed';
+                throw new Error('Registration failed');
             }
         } catch (err) {
-            error = 'Registration failed';
-        } finally {
-            isSubmitting.set(false);
+            success.set(null);
+            error.set(err.response ? err.response.data.message : err.message);
         }
     }
 </script>
@@ -79,13 +64,18 @@
     .form-group button:hover {
         background-color: #0056b3;
     }
-    .error {
+    .error, .success {
         margin-top: 1rem;
         color: white;
         padding: 0.5rem;
         border-radius: 4px;
         text-align: center;
+    }
+    .error {
         background-color: #d9534f;
+    }
+    .success {
+        background-color: #5cb85c;
     }
 </style>
 
@@ -96,8 +86,8 @@
                 <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                     Create a Coalition account
                 </h1>
-                <form class="space-y-4 md:space-y-6" on:submit|preventDefault={handleRegister}>
-                    <div class="form-group">
+                <form class="space-y-4 md:space-y-6" on:submit|preventDefault={register}>
+                    <div>
                         <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Name
                         </label>
@@ -111,7 +101,7 @@
                             required
                         />
                     </div>
-                    <div class="form-group">
+                    <div>
                         <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Your email
                         </label>
@@ -125,7 +115,7 @@
                             required
                         />
                     </div>
-                    <div class="form-group">
+                    <div>
                         <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Password
                         </label>
@@ -139,33 +129,19 @@
                             required
                         />
                     </div>
-                    <div class="form-group">
-                        <label for="confirm-password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Confirm password
-                        </label>
-                        <input
-                            type="password"
-                            name="confirm-password"
-                            id="confirm-password"
-                            placeholder="••••••••"
-                            bind:value={confirmPassword}
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            required
-                        />
-                    </div>
                     <button
                         type="submit"
                         class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
                     >
-                        Create an account
+                        Register for Coalition
                     </button>
-                    {#if error}
-                        <div class="error">{error}</div>
-                    {/if}
                 </form>
-                <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                    Already have an account? <a href="/coalitionlogin" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Login here</a>
-                </p>
+                {#if $error}
+                    <div class="error">{$error}</div>
+                {/if}
+                {#if $success}
+                    <div class="success">{$success}</div>
+                {/if}
             </div>
         </div>
     </div>

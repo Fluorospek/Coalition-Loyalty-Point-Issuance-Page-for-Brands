@@ -1,31 +1,21 @@
 <script>
-    import { onMount } from 'svelte';
+    import { writable } from 'svelte/store';
     import axios from 'axios';
-    import { writable, get } from 'svelte/store';
-    import { coalitionToken, isAuthenticated } from '$lib/store';
-    import { goto } from '$app/navigation'; // Use goto for navigation in SvelteKit
+    import { onMount } from 'svelte';
 
-    let coalitionDetails = null;
+    let coalitionDetails = {};
+    let coalitionToken = ''; // Token for coalition requests
     let error = writable(null);
     let loading = writable(true);
 
     // Fetch coalition details on component mount
     onMount(async () => {
-        const tokenValue = get(coalitionToken);
-        const isUserAuthenticated = get(isAuthenticated);
-
-        if (!isUserAuthenticated) {
-            // Redirect to coalition login if not authenticated
-            goto('/coalition-login');
-            return;
-        }
-
         try {
             const response = await axios.get(
                 'https://coalition-loyalty-point-issuance-page.onrender.com/auth/coalition/details',
                 {
                     headers: {
-                        'Authorization': `Bearer ${tokenValue}`
+                        'Authorization': `Bearer ${coalitionToken}`
                     }
                 }
             );

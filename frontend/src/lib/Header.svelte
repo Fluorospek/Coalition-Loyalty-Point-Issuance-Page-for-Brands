@@ -16,8 +16,6 @@
 		{ title: 'Home', href: '/' },
 		{ title: 'Login', href: '/login' },
 		{ title: 'Register', href: '/register' },
-		{title:'CoalitionLogin',href:'/coalitionlogin'},
-		{title:'CoalitionRegister',href:'/coalitionregister'}
 	];
 
 	$: {
@@ -40,8 +38,6 @@
 				{ title: 'Home', href: '/' },
 				{ title: 'Login', href: '/login' },
 				{ title: 'Register', href: '/register' },
-				{title:'CoalitionLogin',href:'/coalitionlogin'},
-		        {title:'CoalitionRegister',href:'/coalitionregister'}
 			];
 		}
 	}

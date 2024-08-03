@@ -6,14 +6,25 @@
     let authenticated = false;
 
     // Import new components
+    import Login from '../../../lib/coalation/login.svelte';
+    import Register from '../../../lib/coalation/register.svelte';
     import CoalitionSetup from '../../../lib/coalation/CoaliationSteup.svelte';
     import CoalitionAdmin from '../../../lib/coalation/CoaliationAdmin.svelte';
     import CoalitionTokenDetails from '../../../lib/coalation/coaliationtokensetails.svelte';
-    import Loyalitydefine from '../../../lib/coalation/Loyalitydefine.svelte';
     import PopupModal from '../../../lib/components/PopupModal.svelte';
 
     let mainContent = CoalitionLogin; // Default component
     let sidebarItems = [
+        {
+            title: 'Coalition Register',
+            component: Register,
+            visible: true
+        },
+        {
+            title: 'Coalition Login',
+            component: Login,
+            visible: true
+        },
         {
             title: 'Coalition Setup',
             component: CoalitionSetup,
@@ -22,11 +33,6 @@
         {
             title: 'Coalition Admin',
             component: CoalitionAdmin,
-            visible: true
-        },
-        {
-            title: 'Loyal Point Define',
-            component: Loyalitydefine,
             visible: true
         },
         {
