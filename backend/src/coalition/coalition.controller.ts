@@ -2,13 +2,14 @@ import { Controller, UseGuards } from '@nestjs/common';
 import { CoalitionService } from './coalition.service';
 import { Post, Body, Req,Get } from '@nestjs/common';
 import { CoalitionDto } from './dto/coalition.dto';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/roles.decorator';
 import { UserRole } from 'src/user-role.enum';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
 
 @Controller('coalition')
+@ApiTags('Coalition')
 @UseGuards(RolesGuard)
 export class CoalitionController {
   constructor(private readonly coalitionService: CoalitionService) {}
