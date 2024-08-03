@@ -144,7 +144,11 @@ export class LoyaltyService {
         brandId: brandId,
       },
     });
-    return { issuedPoints, statusCode: 200 };
+    const brandToken=await this.brandToken(userId);
+    const tokenDetails=brandToken.brandToken;
+    const pointName=tokenDetails.pointName;
+    const symbol=tokenDetails.symbol;
+    return { pointName,symbol,issuedPoints, statusCode: 200 };
   }
 
   // async issue(userId: number, email: string, IssueDto: IssueDto) {
