@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class IssueDto{
+    
     @IsString()
     @IsNotEmpty()
     neucron_token:string
