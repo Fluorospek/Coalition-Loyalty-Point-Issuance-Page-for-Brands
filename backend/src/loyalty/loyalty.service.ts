@@ -134,6 +134,17 @@ export class LoyaltyService {
     //   throw new NotFoundException('Brand Not Found');
     // }
     // return { brand, statusCode: 200 };
+    const brand = await this.brandService.findBrand(userId);
+    if (!brand) {
+      throw new NotFoundException('Brand Not Found');
+    }
+    const brandId = brand.brandId;
+    const issuedPoints = await this.databaseservice.issuedPoints.findMany({
+      where: {
+        brandId: brandId,
+      },
+    });
+    return { issuedPoints, statusCode: 200 };
   }
 
   // async issue(userId: number, email: string, IssueDto: IssueDto) {
