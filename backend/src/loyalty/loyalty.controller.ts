@@ -36,6 +36,7 @@ export class LoyaltyController {
   //   return await this.loyaltyService.issue(userId,email,IssueDto);
   // }
 
+  //done
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('transactions')
