@@ -66,4 +66,16 @@ export class CoalitionService {
         }
         return {data:coalition, statusCode:200};
     }
+
+    async tokenDetails(userId:number){
+        const brandToken=await this.databaseService.brandTokens.findUnique({
+            where:{
+                coalitionId:userId
+            }
+        });
+        if(!brandToken){
+            throw new NotFoundException('Token Not Found');
+        }
+        return {data:brandToken, statusCode:200};
+    }
 }
