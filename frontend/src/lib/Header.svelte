@@ -15,7 +15,9 @@
 	let navs = [
 		{ title: 'Home', href: '/' },
 		{ title: 'Login', href: '/login' },
-		{ title: 'Register', href: '/register' }
+		{ title: 'Register', href: '/register' },
+		{title:'CoalitionLogin',href:'/coalitionlogin'},
+		{title:'CoalitionRegister',href:'/coalitionregister'}
 	];
 
 	$: {
@@ -23,6 +25,7 @@
 			navs = [
 				{ title: 'Home', href: '/' },
 				{ title: 'Dashboard', href: '/dashboard' },
+				{title:'Coalition',href:'/coalition'},
 				{
 					title: 'Logout',
 					href: '/',
@@ -36,7 +39,9 @@
 			navs = [
 				{ title: 'Home', href: '/' },
 				{ title: 'Login', href: '/login' },
-				{ title: 'Register', href: '/register' }
+				{ title: 'Register', href: '/register' },
+				{title:'CoalitionLogin',href:'/coalitionlogin'},
+		        {title:'CoalitionRegister',href:'/coalitionregister'}
 			];
 		}
 	}

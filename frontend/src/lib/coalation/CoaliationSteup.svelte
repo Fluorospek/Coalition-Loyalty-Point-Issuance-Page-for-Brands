@@ -1,0 +1,155 @@
+<script>
+    import { onMount } from 'svelte';
+    import axios from 'axios';
+    import { isAuthenticated, coalitionToken, setupError, setupSuccess } from '$lib/api/api';
+    import { get } from 'svelte/store';
+    import { goto } from '$app/navigation'; // Use goto for navigation in SvelteKit
+
+    let coalitionName = '';
+    let description = '';
+
+    // Handle coalition setup form submission
+    async function setup(event) {
+        event.preventDefault();
+        setupError.set(null);
+        setupSuccess.set(null);
+
+        // Get the coalition token from the store
+        const tokenValue = get(coalitionToken);
+
+        try {
+            const response = await axios.post(
+                'https://coalition-loyalty-point-issuance-page.onrender.com/auth/coalition/setup',
+                { coalitionName, description },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${tokenValue}`
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                setupSuccess.set('Setup successful');
+                setupError.set(null);
+            } else {
+                throw new Error('Setup failed');
+            }
+        } catch (err) {
+            setupSuccess.set(null);
+            setupError.set(err.response ? err.response.data.message : err.message);
+        }
+    }
+
+    // Redirect to login if the user is not authenticated
+    onMount(() => {
+        const isUserAuthenticated = get(isAuthenticated);
+        if (!isUserAuthenticated) {
+            goto('/coalition-login');
+        }
+    });
+</script>
+
+<style>
+    .form-container {
+        max-width: 400px;
+        margin: auto;
+        padding: 2rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .form-group button {
+        width: 100%;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 4px;
+        background-color: #007BFF;
+        color: white;
+        font-size: 1rem;
+    }
+    .form-group button:hover {
+        background-color: #0056b3;
+    }
+    .error, .success {
+        margin-top: 1rem;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 4px;
+        text-align: center;
+    }
+    .error {
+        background-color: #d9534f;
+    }
+    .success {
+        background-color: #5cb85c;
+    }
+</style>
+
+<section class="bg-gray-50 dark:bg-gray-900">
+    <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto mt-4 md:pd-2 lg:py-0">
+        <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+            <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
+                <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                    Setup Coalition
+                </h1>
+                <form class="space-y-4 md:space-y-6" on:submit|preventDefault={setup}>
+                    <div class="form-group">
+                        <label for="coalitionName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Coalition Name
+                        </label>
+                        <input
+                            type="text"
+                            name="coalitionName"
+                            id="coalitionName"
+                            bind:value={coalitionName}
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Enter coalition name"
+                            required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Description
+                        </label>
+                        <textarea
+                            name="description"
+                            id="description"
+                            bind:value={description}
+                            placeholder="Enter description"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            rows="4"
+                            required
+                        ></textarea>
+                    </div>
+                    <button
+                        type="submit"
+                        class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                    >
+                        Setup Coalition
+                    </button>
+                </form>
+                <p class="text-yellow-500 text-xl">Go Loyalty Define</p>
+                {#if $setupError}
+                    <div class="error">{$setupError}</div>
+                {/if}
+                {#if $setupSuccess}
+                    <div class="success">{$setupSuccess}</div>
+                {/if}
+            </div>
+        </div>
+    </div>
+</section>
