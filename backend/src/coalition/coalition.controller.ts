@@ -35,4 +35,14 @@ export class CoalitionController {
     const userId=req.user.userId;
     return await this.coalitionService.tokens(userId);
   }
+
+  @ApiBearerAuth()
+  @Get('details')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({description:"Admin views details of the coalition",summary:"Coalition Details"})
+  @Roles(UserRole.ADMIN)
+  async details(@Req() req){
+    const userId=req.user.userId;
+    return await this.coalitionService.details(userId);
+  }
 }

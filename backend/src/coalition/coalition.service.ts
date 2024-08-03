@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { DatabaseService } from 'src/database/database.service';
 import { CoalitionDto } from './dto/coalition.dto';
 import { ConflictException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class CoalitionService {
@@ -52,5 +53,17 @@ export class CoalitionService {
             }
         });
         return {data:issuedTokens, statusCode:200};
+    }
+
+    async details(userId:number){
+        const coalition=await this.databaseService.coalition.findUnique({
+            where:{
+                creatorId:userId
+            }
+        });
+        if(!coalition){
+            throw new NotFoundException('Coalition Not Found');
+        }
+        return {data:coalition, statusCode:200};
     }
 }
