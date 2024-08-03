@@ -68,9 +68,11 @@ export class CoalitionService {
     }
 
     async tokenDetails(userId:number){
+        const coalition=await this.details(userId);
+        const coalitionId=coalition.data.coalitionId;
         const brandToken=await this.databaseService.brandTokens.findUnique({
             where:{
-                coalitionId:userId
+                coalitionId:coalitionId
             }
         });
         if(!brandToken){
