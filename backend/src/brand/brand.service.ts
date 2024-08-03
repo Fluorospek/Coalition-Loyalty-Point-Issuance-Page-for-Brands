@@ -25,9 +25,35 @@ export class BrandService {
     }
 
     async setup(userId:number, email:string, BrandDto:BrandDto){
+        // const brand=await this.findBrand(userId);
+        // if(brand){
+        //     throw new ConflictException('Brand Already Setup');
+        // }
+        // const res=await this.dataservice.brand.create({
+        //     data:{
+        //         brandName:BrandDto.brandName,
+        //         description:BrandDto.description,
+        //         otherDetails:BrandDto.otherDetails,
+        //         user:{
+        //             connect:{
+        //                 userId:userId,
+        //                 email:email
+        //             }
+        //         }
+        //     }
+        // })
+        // return {brandId:res.brandId, status: 200}
         const brand=await this.findBrand(userId);
         if(brand){
             throw new ConflictException('Brand Already Setup');
+        }
+        const coalition=await this.dataservice.coalition.findUnique({
+            where:{
+                coalitionId:BrandDto.coalitionId
+            }
+        });
+        if(!coalition){
+            throw new NotFoundException('Coalition Not Found');
         }
         const res=await this.dataservice.brand.create({
             data:{
@@ -39,9 +65,27 @@ export class BrandService {
                         userId:userId,
                         email:email
                     }
+                },
+                Coalition:{
+                    connect:{
+                        coalitionId:BrandDto.coalitionId
+                    }
                 }
             }
-        })
-        return {brandId:res.brandId, status: 200}
+        });
+        return {brandId:res.brandId, statusCode: 200}
+    }
+
+    async coalitionDetails(userId:number){
+        const brand=await this.findBrand(userId);
+        if(!brand){
+            throw new NotFoundException('Brand Not Found');
+        }
+        const coalition=await this.dataservice.coalition.findUnique({
+            where:{
+                coalitionId:brand.coalitionId
+            }
+        });
+        return {data:coalition, statusCode:200};
     }
 }

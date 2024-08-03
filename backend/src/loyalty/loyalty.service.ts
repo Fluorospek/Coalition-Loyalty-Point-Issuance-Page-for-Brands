@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, concatAll } from 'rxjs/operators';
 import { lastValueFrom } from 'rxjs';
 import { BrandService } from 'src/brand/brand.service';
 import { IssueDto } from './dto/issue.dto';
@@ -23,21 +23,49 @@ export class LoyaltyService {
   ) {}
 
   async brandToken(userId: number) {
-    const brand = await this.databaseservice.brand.findUnique({
+    // const coalition = await this.databaseservice.coalition.findUnique({
+    //   where: {
+    //     creatorId: userId,
+    //   },
+    // });
+    // const coalitionId = coalition.coalitionId
+    // console.log(coalition);
+    // const tokenDetails = await this.databaseservice.brandTokens.findUnique({
+    //   where: {
+    //     coalitionId: coalitionId,
+    //   },
+    // });
+    // if (!tokenDetails) {
+    //   throw new NotFoundException('Token Not Found');
+    // }
+    // return { tokenDetails, statusCode: 200 };
+    // const brand = await this.brandService.findBrand(userId);
+    // if (!brand) {
+    //   throw new NotFoundException('Brand Not Found');
+    // }
+    // const brandId = brand.brandId;
+    const brandWithCoalition = await this.databaseservice.brand.findUnique({
       where: {
         brandRepId: userId,
       },
-    });
-    const brandId = brand.brandId;
-    const tokenDetails = await this.databaseservice.brandTokens.findUnique({
-      where: {
-        brandId: brandId,
+      include: {
+        Coalition: true,
       },
     });
-    if (!tokenDetails) {
+    if (!brandWithCoalition) {
+      throw new NotFoundException('Brand Not Found');
+    }
+    const coalitionDetails = brandWithCoalition?.Coalition;
+    const coalitionId = coalitionDetails.coalitionId;
+    const brandToken = await this.databaseservice.brandTokens.findUnique({
+      where: {
+        coalitionId: coalitionId,
+      },
+    });
+    if (!brandToken) {
       throw new NotFoundException('Token Not Found');
     }
-    return { tokenDetails, statusCode: 200 };
+    return { brandToken, statusCode: 200 };
   }
 
   // getIDAmountBySymbol(data, symbol) {
@@ -68,23 +96,22 @@ export class LoyaltyService {
     //   },
     // });
     // return { res, statusCode: 200 };
-    const brand = await this.databaseservice.brand.findUnique({
-      where: {
-        brandRepId: userId,
-      },
-      include: {
-        BrandTokens: {
-          include: {
-            IssuedPoints: {
-              orderBy:{
-                issuedPointId:'asc',
-              }
-            },
-          },
-        },
-      },
-      
-    });
+    // const brand = await this.databaseservice.brand.findUnique({
+    //   where: {
+    //     brandRepId: userId,
+    //   },
+    //   include: {
+    //     BrandTokens: {
+    //       include: {
+    //         IssuedPoints: {
+    //           orderBy:{
+    //             issuedPointId:'asc',
+    //           }
+    //         },
+    //       },
+    //     },
+    //   },
+    // });
     // const brandId = brand.brandId;
     // const brandTokens = await this.databaseservice.brandTokens.findUnique({
     //   where: {
@@ -103,150 +130,150 @@ export class LoyaltyService {
     //     brandTokenId: brandTokenId,
     //   },
     // });
-    if (!brand) {
-      throw new NotFoundException('Brand Not Found');
-    }
-    return { brand, statusCode: 200 };
+    // if (!brand) {
+    //   throw new NotFoundException('Brand Not Found');
+    // }
+    // return { brand, statusCode: 200 };
   }
 
-  async issue(userId: number, email: string, IssueDto: IssueDto) {
-    const brand = await this.brandService.findBrand(userId);
-    if (!brand) {
-      throw new NotFoundException('Brand Not Found');
-    }
-    const brandName = brand.brandName;
-    console.log(IssueDto);
-    const bodyData = {
-      data: {},
-      decimals: 0,
-      description: 'Coalition Loyalty Points',
-      image: 'string',
-      name: IssueDto.pointName,
-      properties: {
-        issuer: {
-          email: email,
-          governingLaw: 'India',
-          issuerCountry: 'India',
-          jurisdiction: 'India',
-          legalForm: 'Limited',
-          organisation: brandName,
-        },
-        legal: {
-          licenceId: 'stastoken.com',
-          terms:
-            'STAS, Inc. retains all rights to the token script.  Use is subject to terms at https://stastoken.com/license.',
-        },
-        meta: {
-          legal: {
-            terms: 'Your token terms and description.',
-          },
-          media: [
-            {
-              URI: 'string',
-              altURI: 'string',
-              type: 'string',
-            },
-          ],
-          schemaId: 'STAS1.0',
-          website: 'string',
-        },
-      },
-      protocolId: 'STAS',
-      satsPerToken: 1,
-      splitable: true,
-      symbol: IssueDto.symbol,
-      totalSupply: IssueDto.totalSupply,
-    };
-    console.log(IssueDto.neucron_token);
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: IssueDto.neucron_token,
-      'User-Agent': 'axios/1.7.2',
-    };
-    const res = await this.http
-      .post('https://dev.neucron.io/v1/stas/mint', bodyData, { headers })
-      .pipe(map((res) => res.data))
-      .pipe(
-        catchError((err) => {
-          throw new NotFoundException(err);
-        }),
-      );
+  // async issue(userId: number, email: string, IssueDto: IssueDto) {
+  //   const brand = await this.brandService.findBrand(userId);
+  //   if (!brand) {
+  //     throw new NotFoundException('Brand Not Found');
+  //   }
+  //   const brandName = brand.brandName;
+  //   console.log(IssueDto);
+  //   const bodyData = {
+  //     data: {},
+  //     decimals: 0,
+  //     description: 'Coalition Loyalty Points',
+  //     image: 'string',
+  //     name: IssueDto.pointName,
+  //     properties: {
+  //       issuer: {
+  //         email: email,
+  //         governingLaw: 'India',
+  //         issuerCountry: 'India',
+  //         jurisdiction: 'India',
+  //         legalForm: 'Limited',
+  //         organisation: brandName,
+  //       },
+  //       legal: {
+  //         licenceId: 'stastoken.com',
+  //         terms:
+  //           'STAS, Inc. retains all rights to the token script.  Use is subject to terms at https://stastoken.com/license.',
+  //       },
+  //       meta: {
+  //         legal: {
+  //           terms: 'Your token terms and description.',
+  //         },
+  //         media: [
+  //           {
+  //             URI: 'string',
+  //             altURI: 'string',
+  //             type: 'string',
+  //           },
+  //         ],
+  //         schemaId: 'STAS1.0',
+  //         website: 'string',
+  //       },
+  //     },
+  //     protocolId: 'STAS',
+  //     satsPerToken: 1,
+  //     splitable: true,
+  //     symbol: IssueDto.symbol,
+  //     totalSupply: IssueDto.totalSupply,
+  //   };
+  //   console.log(IssueDto.neucron_token);
+  //   const headers = {
+  //     'Content-Type': 'application/json',
+  //     Authorization: IssueDto.neucron_token,
+  //     'User-Agent': 'axios/1.7.2',
+  //   };
+  //   const res = await this.http
+  //     .post('https://dev.neucron.io/v1/stas/mint', bodyData, { headers })
+  //     .pipe(map((res) => res.data))
+  //     .pipe(
+  //       catchError((err) => {
+  //         throw new NotFoundException(err);
+  //       }),
+  //     );
 
-    const details = await lastValueFrom(res);
+  //   const details = await lastValueFrom(res);
 
-    // const token = await this.databaseservice.brandTokens.findUnique({
-    //   where: {
-    //     userId: userId,
-    //   },
-    // });
-    // if (!token) {
-    //   await this.databaseservice.brandTokens.create({
-    //     data: {
-    //       user: {
-    //         connect: {
-    //           userId: userId,
-    //           email: email,
-    //         },
-    //       },
-    //       pointName: IssueDto.pointName,
-    //       symbol: IssueDto.symbol,
-    //     },
-    //   });
-    // }
-    // await this.databaseservice.issuedPoints.create({
-    //   data: {
-    //     user: {
-    //       connect: {
-    //         userId: userId,
-    //       },
-    //     },
+  //   // const token = await this.databaseservice.brandTokens.findUnique({
+  //   //   where: {
+  //   //     userId: userId,
+  //   //   },
+  //   // });
+  //   // if (!token) {
+  //   //   await this.databaseservice.brandTokens.create({
+  //   //     data: {
+  //   //       user: {
+  //   //         connect: {
+  //   //           userId: userId,
+  //   //           email: email,
+  //   //         },
+  //   //       },
+  //   //       pointName: IssueDto.pointName,
+  //   //       symbol: IssueDto.symbol,
+  //   //     },
+  //   //   });
+  //   // }
+  //   // await this.databaseservice.issuedPoints.create({
+  //   //   data: {
+  //   //     user: {
+  //   //       connect: {
+  //   //         userId: userId,
+  //   //       },
+  //   //     },
 
-    //     pointName: IssueDto.pointName,
-    //     symbol: IssueDto.symbol,
-    //     totalSupply: IssueDto.totalSupply,
-    //   },
-    // });
+  //   //     pointName: IssueDto.pointName,
+  //   //     symbol: IssueDto.symbol,
+  //   //     totalSupply: IssueDto.totalSupply,
+  //   //   },
+  //   // });
 
-    const brandId = brand.brandId;
-    // const brandToken = await this.databaseservice.brandTokens.findUnique({
-    //   where: {
-    //     brandId: brandId,
-    //   },
-    // });
-    // if (!brandToken) {
-    //   await this.databaseservice.brandTokens.create({
-    //     data: {
-    //       brand: {
-    //         connect: {
-    //           brandId: brandId,
-    //         },
-    //       },
-    //       pointName: IssueDto.pointName,
-    //       symbol: IssueDto.symbol,
-    //     },
-    //   });
-    // }
-    const brandToken = this.define(userId, IssueDto);
-    const issuedPoint = await this.databaseservice.issuedPoints.create({
-      data: {
-        brandTokens: {
-          connect: {
-            brandId: brandId,
-          },
-        },
-        totalSupply: IssueDto.totalSupply,
-        totalIssued: IssueDto.totalSupply,
-        transactionId: details.data.details.TxID,
-        assetId: details.data.details.AssetID,
-      },
-    });
-    return {
-      pontName: IssueDto.pointName,
-      symbol: IssueDto.symbol,
-      issuedPoint,
-      statusCode: 200,
-    };
-  }
+  //   const brandId = brand.brandId;
+  //   // const brandToken = await this.databaseservice.brandTokens.findUnique({
+  //   //   where: {
+  //   //     brandId: brandId,
+  //   //   },
+  //   // });
+  //   // if (!brandToken) {
+  //   //   await this.databaseservice.brandTokens.create({
+  //   //     data: {
+  //   //       brand: {
+  //   //         connect: {
+  //   //           brandId: brandId,
+  //   //         },
+  //   //       },
+  //   //       pointName: IssueDto.pointName,
+  //   //       symbol: IssueDto.symbol,
+  //   //     },
+  //   //   });
+  //   // }
+  //   const brandToken = this.define(userId, IssueDto);
+  //   // const issuedPoint = await this.databaseservice.issuedPoints.create({
+  //   //   data: {
+  //   //     brandTokens: {
+  //   //       connect: {
+  //   //         brandId: brandId,
+  //   //       },
+  //   //     },
+  //   //     totalSupply: IssueDto.totalSupply,
+  //   //     totalIssued: IssueDto.totalSupply,
+  //   //     transactionId: details.data.details.TxID,
+  //   //     assetId: details.data.details.AssetID,
+  //   //   },
+  //   // });
+  //   // return {
+  //   //   pontName: IssueDto.pointName,
+  //   //   symbol: IssueDto.symbol,
+  //   //   issuedPoint,
+  //   //   statusCode: 200,
+  //   // };
+  // }
 
   async distribute(userId: number, DistributeDto: DistributeDto) {
     const issuedPoints = await this.databaseservice.issuedPoints.findUnique({
@@ -261,20 +288,32 @@ export class LoyaltyService {
       throw new NotFoundException('Insufficient Points');
     }
     const assetId = issuedPoints.assetId;
+    const transactionId = issuedPoints.transactionId;
     console.log(assetId);
+    console.log(transactionId);
+    // const bodyData = {
+    //   assetID: assetId,
+    //   amount: DistributeDto.amount,
+    //   destinationPaymail: DistributeDto.recipientAddress,
+    // };
+    console.log(DistributeDto.recipientAddress, DistributeDto.amount);
     const bodyData = {
-      assetID: assetId,
-      amount: DistributeDto.amount,
-      destinationPaymail: DistributeDto.recipientAddress,
+      asset_id: assetId,
+      splitDestinations: [
+        {
+          address: DistributeDto.recipientAddress,
+          satoshis: DistributeDto.amount,
+        },
+      ],
     };
     const headers = {
       'Content-Type': 'application/json',
       Authorization: DistributeDto.access_token,
       'User-Agent': 'axios/1.7.2',
     };
-    const res = await lastValueFrom(
+    const holding = await lastValueFrom(
       this.http
-        .post(`https://dev.neucron.io/v1/stas/transfer?assetID=${assetId}&destinationPaymail=${DistributeDto.recipientAddress}`, bodyData, { headers })
+        .get('https://dev.neucron.io/v1/asset/tokens/list', { headers })
         .pipe(map((res) => res.data))
         .pipe(
           catchError((err) => {
@@ -282,7 +321,34 @@ export class LoyaltyService {
           }),
         ),
     );
-    await this.databaseservice.transactions.create({
+    let holdingAddress;
+    for(const token of holding.data.tokens){
+      for (const utxo of token.utxos){
+        if(utxo.txid===transactionId){
+          holdingAddress=token.address;
+          break;
+        }
+      }
+    }
+    if(!holdingAddress){
+      throw new NotFoundException('Holding Address Not Found');
+    }
+    console.log(holdingAddress)
+    const res = await lastValueFrom(
+      this.http
+        .post(
+          `https://dev.neucron.io/v1/stas/split?holdingAddress=${holdingAddress}`,
+          bodyData,
+          { headers },
+        )
+        .pipe(map((res) => res.data))
+        .pipe(
+          catchError((err) => {
+            throw new NotFoundException(err);
+          }),
+        ),
+    );
+    const result = await this.databaseservice.transactions.create({
       data: {
         IssuedPoints: {
           connect: {
@@ -306,12 +372,12 @@ export class LoyaltyService {
         },
       },
     });
-    return { res, statusCode: 200 };
+    return { holdingAddress:holdingAddress, statusCode: 200 };
   }
 
   async transactions(userId: number) {
     const tokenDetails = await this.brandToken(userId);
-    const brandTokenId = tokenDetails.tokenDetails.brandTokenId;
+    const brandTokenId = tokenDetails.brandToken.brandTokenId;
     const transactions = await this.databaseservice.issuedPoints.findMany({
       where: { brandTokenId: brandTokenId },
       include: {
@@ -323,22 +389,51 @@ export class LoyaltyService {
       },
     });
     return {
-      pointName: tokenDetails.tokenDetails.pointName,
-      symbol: tokenDetails.tokenDetails.symbol,
+      pointName: tokenDetails.brandToken.pointName,
+      symbol: tokenDetails.brandToken.symbol,
       transactions,
       statusCode: 200,
     };
   }
 
   async define(userId: number, DefineDto: DefineDto) {
-    const brand = await this.brandService.findBrand(userId);
-    if (!brand) {
-      throw new NotFoundException('Brand Not Found');
+    // const brand = await this.brandService.findBrand(userId);
+    // if (!brand) {
+    //   throw new NotFoundException('Brand Not Found');
+    // }
+    // const brandId = brand.brandId;
+    // let brandToken = await this.databaseservice.brandTokens.findUnique({
+    //   where: {
+    //     brandId: brandId,
+    //   },
+    // });
+    // if (brandToken) {
+    //   throw new ConflictException('Token Already Defined');
+    // }
+    // brandToken = await this.databaseservice.brandTokens.create({
+    //   data: {
+    //     brand: {
+    //       connect: {
+    //         brandId: brandId,
+    //       },
+    //     },
+    //     pointName: DefineDto.pointName,
+    //     symbol: DefineDto.symbol,
+    //   },
+    // });
+    // return { brandToken, statusCode: 200 };
+    const coalition = await this.databaseservice.coalition.findUnique({
+      where: {
+        creatorId: userId,
+      },
+    });
+    if (!coalition) {
+      throw new NotFoundException('Coalition Not Found');
     }
-    const brandId = brand.brandId;
+    const coalitionId = coalition.coalitionId;
     let brandToken = await this.databaseservice.brandTokens.findUnique({
       where: {
-        brandId: brandId,
+        coalitionId: coalitionId,
       },
     });
     if (brandToken) {
@@ -346,9 +441,9 @@ export class LoyaltyService {
     }
     brandToken = await this.databaseservice.brandTokens.create({
       data: {
-        brand: {
+        Coalition: {
           connect: {
-            brandId: brandId,
+            coalitionId: coalitionId,
           },
         },
         pointName: DefineDto.pointName,
@@ -359,15 +454,137 @@ export class LoyaltyService {
   }
 
   async issueV2(userId: number, email: string, IssueV2Dto: IssueV2Dto) {
+    // const brand = await this.brandService.findBrand(userId);
+    // if (!brand) {
+    //   throw new NotFoundException('Brand Not Found');
+    // }
+    // const brandName = brand.brandName;
+    // const tokenDetails = await this.brandToken(userId);
+    // const tokenName = tokenDetails.tokenDetails.pointName;
+    // const tokenSymbol = tokenDetails.tokenDetails.symbol;
+    // console.log(IssueDto);
+    // const bodyData = {
+    //   data: {},
+    //   decimals: 0,
+    //   description: 'Coalition Loyalty Points',
+    //   image: 'string',
+    //   name: tokenName,
+    //   properties: {
+    //     issuer: {
+    //       email: email,
+    //       governingLaw: 'India',
+    //       issuerCountry: 'India',
+    //       jurisdiction: 'India',
+    //       legalForm: 'Limited',
+    //       organisation: brandName,
+    //     },
+    //     legal: {
+    //       licenceId: 'stastoken.com',
+    //       terms:
+    //         'STAS, Inc. retains all rights to the token script.  Use is subject to terms at https://stastoken.com/license.',
+    //     },
+    //     meta: {
+    //       legal: {
+    //         terms: 'Your token terms and description.',
+    //       },
+    //       media: [
+    //         {
+    //           URI: 'string',
+    //           altURI: 'string',
+    //           type: 'string',
+    //         },
+    //       ],
+    //       schemaId: 'STAS1.0',
+    //       website: 'string',
+    //     },
+    //   },
+    //   protocolId: 'STAS',
+    //   satsPerToken: 1,
+    //   splitable: true,
+    //   symbol: tokenSymbol,
+    //   totalSupply: IssueV2Dto.totalSupply,
+    // };
+    // console.log(IssueV2Dto.neucron_token);
+    // const headers = {
+    //   'Content-Type': 'application/json',
+    //   Authorization: IssueV2Dto.neucron_token,
+    //   'User-Agent': 'axios/1.7.2',
+    // };
+    // const res = await this.http
+    //   .post('https://dev.neucron.io/v1/stas/mint', bodyData, { headers })
+    //   .pipe(map((res) => res.data))
+    //   .pipe(
+    //     catchError((err) => {
+    //       throw new NotFoundException(err);
+    //     }),
+    //   );
+
+    // const details = await lastValueFrom(res);
+
+    // await this.databaseservice.issuedPoints.create({
+    //   data: {
+    //     user: {
+    //       connect: {
+    //         userId: userId,
+    //       },
+    //     },
+
+    //     pointName: IssueDto.pointName,
+    //     symbol: IssueDto.symbol,
+    //     totalSupply: IssueDto.totalSupply,
+    //   },
+    // });
+
+    //const brandId = brand.brandId;
+    // const brandToken = await this.databaseservice.brandTokens.findUnique({
+    //   where: {
+    //     brandId: brandId,
+    //   },
+    // });
+    // if (!brandToken) {
+    //   await this.databaseservice.brandTokens.create({
+    //     data: {
+    //       brand: {
+    //         connect: {
+    //           brandId: brandId,
+    //         },
+    //       },
+    //       pointName: IssueDto.pointName,
+    //       symbol: IssueDto.symbol,
+    //     },
+    //   });
+    // }
+    //const brandToken=this.define(userId,IssueV2Dto);
+    // const issuedPoint = await this.databaseservice.issuedPoints.create({
+    //   data: {
+    //     brandTokens: {
+    //       connect: {
+    //         brandId: brandId,
+    //       },
+    //     },
+    //     totalSupply: IssueV2Dto.totalSupply,
+    //     totalIssued: IssueV2Dto.totalSupply,
+    //     transactionId: details.data.details.TxID,
+    //     assetId: details.data.details.AssetID,
+    //   },
+    // });
+    // return {
+    //   pontName: tokenName,
+    //   symbol: tokenSymbol,
+    //   issuedPoint,
+    //   statusCode: 200,
+    // };
     const brand = await this.brandService.findBrand(userId);
     if (!brand) {
       throw new NotFoundException('Brand Not Found');
     }
     const brandName = brand.brandName;
     const tokenDetails = await this.brandToken(userId);
-    const tokenName = tokenDetails.tokenDetails.pointName;
-    const tokenSymbol = tokenDetails.tokenDetails.symbol;
-    console.log(IssueDto);
+    console.log(tokenDetails);
+    const tokenId = tokenDetails.brandToken.brandTokenId;
+    const tokenName = tokenDetails.brandToken.pointName;
+    const tokenSymbol = tokenDetails.brandToken.symbol;
+    console.log(IssueV2Dto);
     const bodyData = {
       data: {},
       decimals: 0,
@@ -409,7 +626,6 @@ export class LoyaltyService {
       symbol: tokenSymbol,
       totalSupply: IssueV2Dto.totalSupply,
     };
-    console.log(IssueV2Dto.neucron_token);
     const headers = {
       'Content-Type': 'application/json',
       Authorization: IssueV2Dto.neucron_token,
@@ -423,65 +639,16 @@ export class LoyaltyService {
           throw new NotFoundException(err);
         }),
       );
-
     const details = await lastValueFrom(res);
-
-    // const token = await this.databaseservice.brandTokens.findUnique({
-    //   where: {
-    //     userId: userId,
-    //   },
-    // });
-    // if (!token) {
-    //   await this.databaseservice.brandTokens.create({
-    //     data: {
-    //       user: {
-    //         connect: {
-    //           userId: userId,
-    //           email: email,
-    //         },
-    //       },
-    //       pointName: IssueDto.pointName,
-    //       symbol: IssueDto.symbol,
-    //     },
-    //   });
-    // }
-    // await this.databaseservice.issuedPoints.create({
-    //   data: {
-    //     user: {
-    //       connect: {
-    //         userId: userId,
-    //       },
-    //     },
-
-    //     pointName: IssueDto.pointName,
-    //     symbol: IssueDto.symbol,
-    //     totalSupply: IssueDto.totalSupply,
-    //   },
-    // });
-
     const brandId = brand.brandId;
-    // const brandToken = await this.databaseservice.brandTokens.findUnique({
-    //   where: {
-    //     brandId: brandId,
-    //   },
-    // });
-    // if (!brandToken) {
-    //   await this.databaseservice.brandTokens.create({
-    //     data: {
-    //       brand: {
-    //         connect: {
-    //           brandId: brandId,
-    //         },
-    //       },
-    //       pointName: IssueDto.pointName,
-    //       symbol: IssueDto.symbol,
-    //     },
-    //   });
-    // }
-    //const brandToken=this.define(userId,IssueV2Dto);
     const issuedPoint = await this.databaseservice.issuedPoints.create({
       data: {
         brandTokens: {
+          connect: {
+            brandTokenId: tokenId,
+          },
+        },
+        Brand: {
           connect: {
             brandId: brandId,
           },

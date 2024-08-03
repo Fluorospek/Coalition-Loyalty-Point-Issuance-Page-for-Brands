@@ -6,9 +6,14 @@ import { IssueDto } from './dto/issue.dto';
 import { DefineDto } from './dto/define.dto';
 import { IssueV2Dto } from './dto/issuev2.dto';
 import { DistributeDto } from './dto/distribute.dto';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from 'src/roles.decorator';
+import { UserRole } from 'src/user-role.enum';
+import { Role } from '@prisma/client';
 
 @ApiTags('Loyalty')
 @Controller('loyalty')
+@UseGuards(RolesGuard)
 export class LoyaltyController {
   constructor(private readonly loyaltyService: LoyaltyService) {}
 
@@ -21,15 +26,15 @@ export class LoyaltyController {
     return await this.loyaltyService.manage(userId);
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Post('issue')
-  @ApiOperation({description:"Brand Representative issues loyalty points",summary:"Issue Loyalty Points"})
-  async issue(@Req() req, @Body() IssueDto:IssueDto){
-    const userId=req.user.userId;
-    const email=req.user.email;
-    return await this.loyaltyService.issue(userId,email,IssueDto);
-  }
+  // @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
+  // @Post('issue')
+  // @ApiOperation({description:"Brand Representative issues loyalty points",summary:"Issue Loyalty Points"})
+  // async issue(@Req() req, @Body() IssueDto:IssueDto){
+  //   const userId=req.user.userId;
+  //   const email=req.user.email;
+  //   return await this.loyaltyService.issue(userId,email,IssueDto);
+  // }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -40,24 +45,28 @@ export class LoyaltyController {
     return await this.loyaltyService.transactions(userId);
   }
 
+  //done
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('brand-token')
   @ApiOperation({description:"Brand Representative can view brand Token details",summary:"Brand Token Details"})
   async brandToken(@Req() req){
     const userId=req.user.userId;
-    return await this.loyaltyService.brandToken(userId); 
+    return await this.loyaltyService.brandToken(userId);
   }
 
+  //done
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('define')
+  @Roles(UserRole.ADMIN)
   @ApiOperation({description:"Brand Representative can define Loyalty point details",summary:"Define Loyalty Point Details"})
   async define(@Req() req,@Body() DefineDto:DefineDto){
     const userId=req.user.userId;
     return await this.loyaltyService.define(userId,DefineDto);
   }
 
+  //done
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('issue/v2')

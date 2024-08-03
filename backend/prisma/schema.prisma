@@ -14,12 +14,14 @@ datasource db {
 }
 
 model User {
-  userId    Int      @id @default(autoincrement())
-  email     String   @unique
+  userId    Int        @id @default(autoincrement())
+  email     String     @unique
   name      String
   password  String
-  createdAt DateTime @default(now())
+  role      Role       @default(USER)
+  createdAt DateTime   @default(now())
   brand     Brand?
+  Coalition Coalition?
 }
 
 model Brand {
@@ -32,17 +34,34 @@ model Brand {
 
   user User @relation(fields: [brandRepId], references: [userId])
 
+  coalitionId Int
+  Coalition   Coalition @relation(fields: [coalitionId], references: [coalitionId])
+
+  IssuedPoints IssuedPoints[]
+}
+
+model Coalition {
+  coalitionId Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  creatorId Int  @unique
+  creator   User @relation(fields: [creatorId], references: [userId])
+
+  brands      Brand[]
   BrandTokens BrandTokens?
 }
 
 model BrandTokens {
   brandTokenId Int      @id @default(autoincrement())
-  brandId      Int      @unique
   pointName    String
   symbol       String
   createdAt    DateTime @default(now())
 
-  brand        Brand          @relation(fields: [brandId], references: [brandId])
+  coalitionId Int       @unique
+  Coalition   Coalition @relation(fields: [coalitionId], references: [coalitionId])
+
   IssuedPoints IssuedPoints[]
 }
 
@@ -57,6 +76,8 @@ model IssuedPoints {
 
   brandTokens  BrandTokens    @relation(fields: [brandTokenId], references: [brandTokenId])
   Transactions Transactions[]
+  Brand        Brand          @relation(fields: [brandId], references: [brandId])
+  brandId      Int
 }
 
 model Transactions {
@@ -81,4 +102,9 @@ enum Status {
   PENDING
   COMPLETED
   FAILED
+}
+
+enum Role {
+  ADMIN
+  USER
 }
