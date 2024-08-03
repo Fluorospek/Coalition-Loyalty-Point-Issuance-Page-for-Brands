@@ -6,9 +6,10 @@ import { AuthModule } from './auth/auth.module';
 import { BrandModule } from './brand/brand.module';
 import { UserModule } from './user/user.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
+import { CoalitionModule } from './coalition/coalition.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, BrandModule, UserModule, LoyaltyModule],
+  imports: [DatabaseModule, AuthModule, BrandModule, UserModule, LoyaltyModule, CoalitionModule],
   controllers: [AppController],
   providers: [AppService],
 })

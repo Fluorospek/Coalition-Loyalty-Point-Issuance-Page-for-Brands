@@ -1,6 +1,6 @@
 import { Controller,Post,Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterBrandRepDto } from './dto/register.dto';
+import { RegisterDto } from './dto/register.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -14,8 +14,8 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({description:"Brand Reprasentative registers with email",summary:"Register with email"})
-  async register(@Body() RegisterBrandRepDto:RegisterBrandRepDto){
-    return await this.authService.register(RegisterBrandRepDto)
+  async register(@Body() RegisterDto:RegisterDto){
+    return await this.authService.register(RegisterDto)
   }
 
   @Post('login')
@@ -30,5 +30,17 @@ export class AuthController {
   @ApiOperation({description:"Brand Representative logs into neucron wallet using email",summary:"Login to neucron wallet"})
   async neucronLogin(@Body() NeucronLoginDto:NeucronLoginDto){
     return await this.authService.neucronLogin(NeucronLoginDto);
+  }
+
+  @Post('coalition/login')
+  @ApiOperation({description:"Admin logs into coalition dashboard using email",summary:"Admin Login with email"})
+  async coalitionLogin(@Body() LoginDto:LoginDto){
+    return await this.authService.coalitionLogin(LoginDto)
+  }
+
+  @Post('coalition/register')
+  @ApiOperation({description:"Admin registers with email",summary:"Register Admin with email"})
+  async coalitionRegister(@Body() RegisterDto:RegisterDto){
+    return await this.authService.coalitionRegister(RegisterDto)
   }
 }
