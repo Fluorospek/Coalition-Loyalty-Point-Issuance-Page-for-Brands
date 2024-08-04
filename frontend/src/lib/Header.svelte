@@ -1,14 +1,18 @@
 <script>
 	import { page } from '$app/stores';
-	import { isAuthenticated, logout } from '../lib/api/api';
+	import { isAuthenticated, isCoalitionAuthenticated, logoutAuth, logoutCoalition } from '$lib/api/api';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
 	let authenticated = false;
+	let coalitionAuthenticated = false;
 
 	onMount(() => {
 		isAuthenticated.subscribe((value) => {
 			authenticated = value;
+		});
+		isCoalitionAuthenticated.subscribe((value) => {
+			coalitionAuthenticated = value;
 		});
 	});
 
@@ -16,6 +20,8 @@
 		{ title: 'Home', href: '/' },
 		{ title: 'Login', href: '/login' },
 		{ title: 'Register', href: '/register' },
+		{ title: 'Coalition Login', href: '/coalition-login' },
+		{ title: 'Coalition Register', href: '/coalition-register' },
 	];
 
 	$: {
@@ -23,12 +29,11 @@
 			navs = [
 				{ title: 'Home', href: '/' },
 				{ title: 'Dashboard', href: '/dashboard' },
-				{title:'Coalition',href:'/coalition'},
 				{
 					title: 'Logout',
 					href: '/',
 					action: () => {
-						logout();
+						logoutAuth();
 						goto('/');
 					}
 				}
@@ -38,6 +43,23 @@
 				{ title: 'Home', href: '/' },
 				{ title: 'Login', href: '/login' },
 				{ title: 'Register', href: '/register' },
+				{ title: 'Coalition Login', href: '/coalition-login' },
+				{ title: 'Coalition Register', href: '/coalition-register' },
+			];
+		}
+
+		if (coalitionAuthenticated) {
+			navs = [
+				{ title: 'Home', href: '/' },
+				{ title: 'CoalitionDashboard', href: '/coalition' },
+				{
+					title: 'Logout',
+					href: '/',
+					action: () => {
+						logoutCoalition();
+						goto('/');
+					}
+				}
 			];
 		}
 	}
@@ -47,8 +69,8 @@
 	<div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
 		<a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
 			<img src="https://tsoc.dev/TSoC_Favicon.svg" class="h-8" alt="TimeChain LOGO" />
-			<span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white"
-				>Coalition Loyalty Point Issuance
+			<span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
+				Coalition Loyalty Point Issuance
 			</span>
 		</a>
 		<div class="hidden w-full md:block md:w-auto" id="navbar-default">

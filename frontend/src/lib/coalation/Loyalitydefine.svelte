@@ -1,9 +1,9 @@
 <script>
-	import { token as jwtToken, isAuthenticated } from '$lib/api/api';
+	import { coalitionToken as jwtToken, isCoalitionAuthenticated } from '$lib/api/api';
 	import { goto } from '$app/navigation';
-	import axios from 'axios';
+	import axios from 'axios';//isAuthenticated
 	import { onMount } from 'svelte';
-	import PopupModal from './PopupModal.svelte';
+	import PopupModal from '../components/PopupModal.svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	let jwt = null;
@@ -27,7 +27,7 @@
 	let authenticated = false;
 
 	// Subscribe to isAuthenticated store
-	isAuthenticated.subscribe((value) => {
+	isCoalitionAuthenticated.subscribe((value) => {
 		authenticated = value;
 	});
 
@@ -68,7 +68,7 @@
 
 			// Optionally, redirect to the next page after a delay
 			setTimeout(() => {
-				goto('/dashboard');
+				goto('/coalition');
 			}, 2000); // Redirect after 2 seconds
 		} catch (error) {
 			// Handle errors
@@ -85,7 +85,7 @@
 
 			if (error.response && error.response.status === 401) {
 				// If unauthorized, redirect to login
-				goto('/login');
+				goto('/coalition-login');
 			}
 		}
 	}

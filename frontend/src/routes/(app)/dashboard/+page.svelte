@@ -1,58 +1,16 @@
 <script>
 	import { onMount } from 'svelte';
-	import { token, isbrandExists, isloyaltyPointIssue, isAuthenticated } from '$lib/api/api';
+	import { authToken, isAuthenticated } from '$lib/api/api';
 	import { goto } from '$app/navigation';
-	import axios from 'axios';
-	import { get } from 'svelte/store';
 
 	let authenticated = false;
 
 	// Check authentication on mount
 	onMount(() => {
-		async function checkBrand() {
-			try {
-				const response = await axios.get('https://coalition-loyalty-point-issuance-page.onrender.com/brand/details', {
-					headers: {
-						Authorization: `Bearer ${get(token)}`
-					}
-				});
-				if (response.status === 200) {
-					localStorage.setItem('isbrandExists', true);
-					isbrandExists.set(true);
-				} else {
-					localStorage.setItem('isbrandExists', false);
-					isbrandExists.set(false);
-				}
-			} catch (error) {
-				throw new Error('Error fetching brand details: ' + error.message);
-			}
-		}
-		async function checkLoyaltyPoint() {
-			try {
-				const response = await axios.get('https://coalition-loyalty-point-issuance-page.onrender.com/user/profile', {
-					headers: {
-						Authorization: `Bearer ${get(token)}`
-					}
-				});
-				if (response.status === 200) {
-					localStorage.setItem('isloyaltyPointIssue', true);
-					isloyaltyPointIssue.set(true);
-				} else {
-					localStorage.setItem('isloyaltyPointIssue', false);
-					isloyaltyPointIssue.set(false);
-				}
-			} catch (error) {
-				throw new Error('Error fetching user profile: ' + error.message);
-			}
-		}
 		isAuthenticated.subscribe((value) => {
 			authenticated = value;
 			if (!authenticated) {
 				goto('/login');
-			} else {
-				checkBrand();
-				checkLoyaltyPoint();
-				console.log(get(isbrandExists), get(isloyaltyPointIssue));
 			}
 		});
 	});
@@ -66,18 +24,13 @@
 	import DistributePoints from '../../../lib/components/DistributePoints.svelte';
 	import PopupModal from '../../../lib/components/PopupModal.svelte';
 	import Wallet from '../../../lib/components/Wallet.svelte';
-    import Loyalitydefine from '../../../lib/components/Loyalitydefine.svelte';
+	
 	let mainContent = BrandSetup;
 
 	let sidebarItems = [
 		{
 			title: 'Brand Profile Setup',
 			component: BrandSetup,
-			visible: !get(isbrandExists)
-		},
-		{
-			title:' Loyality Point Define',
-			component: Loyalitydefine,
 			visible: true
 		},
 		{
@@ -132,30 +85,6 @@
 			}
 		});
 	}
-	/*
-	function handleBrandExists() {
-		brandExist = true;
-		sidebarItems = sidebarItems.map((item) => {
-			if (item.title === 'Brand Profile Setup') {
-				item.visible = false;
-			}
-			return item;
-		});
-		// Only update mainContent if the current component is BrandSetup
-		if (mainContent === BrandSetup) {
-			mainContent = Wallet;
-		}
-	}
-*/
-	// Ensure authentication check is done on mount
-	onMount(() => {
-		isAuthenticated.subscribe((value) => {
-			authenticated = value;
-			if (!authenticated) {
-				goto('/login');
-			}
-		});
-	});
 </script>
 
 {#if authenticated}

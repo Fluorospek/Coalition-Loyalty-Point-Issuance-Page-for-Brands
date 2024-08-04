@@ -2,32 +2,39 @@
     import { writable } from 'svelte/store';
     import axios from 'axios';
     import { onMount } from 'svelte';
+    import { coalitionToken } from '$lib/api/api';
 
-    let coalitionDetails = {};
-    let coalitionToken = ''; // Token for coalition requests
+    let coalitionDetails = writable(null);
     let error = writable(null);
     let loading = writable(true);
 
     // Fetch coalition details on component mount
     onMount(async () => {
+        let token;
+        const unsubscribe = coalitionToken.subscribe(value => {
+            token = value;
+        });
+
         try {
             const response = await axios.get(
-                'https://coalition-loyalty-point-issuance-page.onrender.com/auth/coalition/details',
+                'http://localhost:3000/auth/coalition/details',
                 {
                     headers: {
-                        'Authorization': `Bearer ${coalitionToken}`
+                        'Authorization': `Bearer ${token}`
                     }
                 }
             );
 
-            coalitionDetails = response.data.data;
+            coalitionDetails.set(response.data.data);
             error.set(null);
         } catch (err) {
-            coalitionDetails = null;
+            coalitionDetails.set(null);
             error.set('Failed to fetch coalition details.');
         } finally {
             loading.set(false);
         }
+
+        unsubscribe();
     });
 </script>
 
@@ -69,7 +76,7 @@
         <p class="loading">Loading...</p>
     {:else if $error}
         <p class="error">{$error}</p>
-    {:else if coalitionDetails}
+    {:else if $coalitionDetails}
         <table>
             <thead>
                 <tr>
@@ -81,10 +88,10 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{coalitionDetails.coalitionId}</td>
-                    <td>{coalitionDetails.name}</td>
-                    <td>{coalitionDetails.description}</td>
-                    <td>{coalitionDetails.creatorId}</td>
+                    <td>{$coalitionDetails.coalitionId}</td>
+                    <td>{$coalitionDetails.name}</td>
+                    <td>{$coalitionDetails.description}</td>
+                    <td>{$coalitionDetails.creatorId}</td>
                 </tr>
             </tbody>
         </table>

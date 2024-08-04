@@ -1,23 +1,41 @@
 <script>
     import { writable } from 'svelte/store';
     import axios from 'axios';
+    import {coalitionToken as coalitionAuthToken, } from '$lib/api/api';
+    import { onDestroy } from 'svelte';
 
     let coalitionName = '';
     let description = '';
-    let coalitionToken = ''; // Token for coalition requests
-
+    let coalitionToken = '';
+    
+    // Error and success messages
     let error = writable(null);
     let success = writable(null);
+
+    // Subscribe to the coalitionAuthToken store to get the token value
+    let unsubscribeToken;
+    onDestroy(() => {
+        if (unsubscribeToken) {
+            unsubscribeToken();
+        }
+    });
 
     // Function to handle setup
     async function setup() {
         try {
+            // Fetch token from the store
+            let token;
+            const unsubscribe = coalitionAuthToken.subscribe(value => {
+                token = value;
+            });
+            unsubscribeToken = unsubscribe;
+
             const response = await axios.post(
-                'https://coalition-loyalty-point-issuance-page.onrender.com/auth/coalition/setup',
+                'http://localhost:3000/auth/coalition/setup',
                 { coalitionName, description },
                 {
                     headers: {
-                        'Authorization': `Bearer ${coalitionToken}`
+                        'Authorization': `Bearer ${token || coalitionToken}`
                     }
                 }
             );
@@ -128,7 +146,7 @@
                         Setup Coalition
                     </button>
                 </form>
-                <p>Go for The Loyality Define</p>
+                <p>Go for The Loyality Define in the BrandDashboard</p>
                 {#if $error}
                     <div class="error">{$error}</div>
                 {/if}

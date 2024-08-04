@@ -1,5 +1,5 @@
 <script>
-	import { token as jwtToken, isAuthenticated } from '$lib/api/api';
+	import { authToken as jwtToken, isAuthenticated } from '$lib/api/api';
 	import { goto } from '$app/navigation';
 	import axios from 'axios';
 	import { onMount } from 'svelte';

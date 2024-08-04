@@ -1,96 +1,58 @@
 <script>
+    import { goto } from '$app/navigation';
     import { writable } from 'svelte/store';
-    import axios from 'axios';
 
+    // Local state
+    let name = '';
     let email = '';
     let password = '';
-    let name = '';
+    let error = '';
+    let isSubmitting = writable(false);
 
-    let error = writable(null);
-    let success = writable(null);
+    // Function to handle form submission
+    async function handleRegister() {
+        isSubmitting.set(true);
+        error = '';
 
-    async function register() {
         try {
-            const response = await axios.post('https://coalition-loyalty-point-issuance-page.onrender.com/auth/coalition/register', {
-                email,
-                password,
-                name
+            const response = await fetch('http://localhost:3000/auth/coalition/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email, password })
             });
 
-            if (response.status === 200) {
-                success.set('Registration successful');
-                error.set(null);
+            if (response.ok) {
+                const result = await response.json();
+                // Optionally handle result, like redirecting
+                goto('/coalition-login'); // Redirect to login page after successful registration
             } else {
-                throw new Error('Registration failed');
+                const result = await response.json();
+                error = result.message || 'Registration failed';
             }
         } catch (err) {
-            success.set(null);
-            error.set(err.response ? err.response.data.message : err.message);
+            error = 'Registration failed';
+        } finally {
+            isSubmitting.set(false);
         }
     }
 </script>
 
-<style>
-    .form-container {
-        max-width: 400px;
-        margin: auto;
-        padding: 2rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-    }
-    .form-group {
-        margin-bottom: 1rem;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-    }
-    .form-group input {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-    .form-group button {
-        width: 100%;
-        padding: 0.75rem;
-        border: none;
-        border-radius: 4px;
-        background-color: #007BFF;
-        color: white;
-        font-size: 1rem;
-    }
-    .form-group button:hover {
-        background-color: #0056b3;
-    }
-    .error, .success {
-        margin-top: 1rem;
-        color: white;
-        padding: 0.5rem;
-        border-radius: 4px;
-        text-align: center;
-    }
-    .error {
-        background-color: #d9534f;
-    }
-    .success {
-        background-color: #5cb85c;
-    }
-</style>
-
 <section class="bg-gray-50 dark:bg-gray-900">
     <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto mt-4 md:pd-2 lg:py-0">
-        <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+        <div
+            class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700"
+        >
             <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-                <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                <h1
+                    class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white"
+                >
                     Create a Coalition account
                 </h1>
-                <form class="space-y-4 md:space-y-6" on:submit|preventDefault={register}>
+                <form class="space-y-4 md:space-y-6" on:submit|preventDefault={handleRegister}>
                     <div>
-                        <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Name
-                        </label>
+                        <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
                         <input
                             type="text"
                             name="name"
@@ -102,9 +64,7 @@
                         />
                     </div>
                     <div>
-                        <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Your email
-                        </label>
+                        <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
                         <input
                             type="email"
                             name="email"
@@ -116,9 +76,7 @@
                         />
                     </div>
                     <div>
-                        <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Password
-                        </label>
+                        <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
                         <input
                             type="password"
                             name="password"
@@ -132,16 +90,12 @@
                     <button
                         type="submit"
                         class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                    >
-                        Register for Coalition
+                        >Create an account
                     </button>
+                    {#if error}
+                        <p class="text-red-500 text-sm mt-2">{error}</p>
+                    {/if}
                 </form>
-                {#if $error}
-                    <div class="error">{$error}</div>
-                {/if}
-                {#if $success}
-                    <div class="success">{$success}</div>
-                {/if}
             </div>
         </div>
     </div>

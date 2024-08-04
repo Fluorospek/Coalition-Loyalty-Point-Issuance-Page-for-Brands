@@ -1,40 +1,55 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-// Token store
-export const token = writable(browser ? localStorage.getItem('token') : null);
-// Authentication state store
-export const isAuthenticated = writable(browser ? !!localStorage.getItem('token') : false);
+// Auth token store
+export const authToken = writable(browser ? localStorage.getItem('authToken') : null);
+// Coalition token store
+export const coalitionToken = writable(browser ? localStorage.getItem('coalitionToken') : null);
 
-//for brand and user details
-export const isbrandExists = writable(browser ? !!localStorage.getItem('isbrandExists') : false);
-export const isloyaltyPointIssue = writable(browser ? !!localStorage.getItem('isloyaltyPointIssue') : false);
+// Authentication state stores
+export const isAuthenticated = writable(browser ? !!localStorage.getItem('authToken') : false);
+export const isCoalitionAuthenticated = writable(browser ? !!localStorage.getItem('coalitionToken') : false);
 
-// Authentication state store
-// Update token and authentication state
-token.subscribe(value => {
+// Update auth token and authentication state
+authToken.subscribe(value => {
     if (browser) {
         if (value) {
-            localStorage.setItem('token', value);
+            localStorage.setItem('authToken', value);
             isAuthenticated.set(true);
         } else {
-            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
             isAuthenticated.set(false);
         }
     }
 });
-// Update token and authentication state
 
-
-
-
-// Logout function
-export function logout() {
-    token.set(null);
+// Update coalition token and authentication state
+coalitionToken.subscribe(value => {
     if (browser) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('isbrandExists')
-        localStorage.removeItem('isloyaltyPointIssue')
+        if (value) {
+            localStorage.setItem('coalitionToken', value);
+            isCoalitionAuthenticated.set(true);
+        } else {
+            localStorage.removeItem('coalitionToken');
+            isCoalitionAuthenticated.set(false);
+        }
+    }
+});
+
+// Logout function for auth token
+export function logoutAuth() {
+    authToken.set(null);
+    if (browser) {
+        localStorage.removeItem('authToken');
         window.location.href = '/login';
+    }
+}
+
+// Logout function for coalition token
+export function logoutCoalition() {
+    coalitionToken.set(null);
+    if (browser) {
+        localStorage.removeItem('coalitionToken');
+        window.location.href = '/coalition-login';
     }
 }

@@ -1,30 +1,19 @@
 <script>
     import { onMount } from 'svelte';
-    import { token, isAuthenticated } from '$lib/api/api';
+    import { coalitionToken, isCoalitionAuthenticated } from '$lib/api/api';
     import { goto } from '$app/navigation';
 
     let authenticated = false;
+    let tokenValue = null;
 
     // Import new components
-    import Login from '../../../lib/coalation/login.svelte';
-    import Register from '../../../lib/coalation/register.svelte';
     import CoalitionSetup from '../../../lib/coalation/CoaliationSteup.svelte';
     import CoalitionAdmin from '../../../lib/coalation/CoaliationAdmin.svelte';
     import CoalitionTokenDetails from '../../../lib/coalation/coaliationtokensetails.svelte';
     import PopupModal from '../../../lib/components/PopupModal.svelte';
-
-    let mainContent = CoalitionLogin; // Default component
+    import Loyalitydefine from '../../../lib/coalation/Loyalitydefine.svelte';
+    let mainContent = CoalitionSetup; // Default component
     let sidebarItems = [
-        {
-            title: 'Coalition Register',
-            component: Register,
-            visible: true
-        },
-        {
-            title: 'Coalition Login',
-            component: Login,
-            visible: true
-        },
         {
             title: 'Coalition Setup',
             component: CoalitionSetup,
@@ -33,6 +22,11 @@
         {
             title: 'Coalition Admin',
             component: CoalitionAdmin,
+            visible: true
+        },
+        {
+            title: 'Loyalitydefine',
+            component: Loyalitydefine,
             visible: true
         },
         {
@@ -56,11 +50,16 @@
     }
 
     onMount(() => {
-        isAuthenticated.subscribe((value) => {
+        // Subscribe to the authentication status and token
+        isCoalitionAuthenticated.subscribe(value => {
             authenticated = value;
             if (!authenticated) {
-                goto('/coalitionlogin');
+                goto('/login'); // Redirect if not authenticated
             }
+        });
+
+        coalitionToken.subscribe(value => {
+            tokenValue = value;
         });
     });
 </script>

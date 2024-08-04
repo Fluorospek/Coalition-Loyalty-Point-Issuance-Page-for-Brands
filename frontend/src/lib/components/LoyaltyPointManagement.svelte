@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import axios from 'axios';
-	import { token as jwtToken, isAuthenticated } from '$lib/api/api';
+	import { authToken as jwtToken, isAuthenticated } from '$lib/api/api';
 	import { goto } from '$app/navigation';
 	import { createEventDispatcher } from 'svelte';
 

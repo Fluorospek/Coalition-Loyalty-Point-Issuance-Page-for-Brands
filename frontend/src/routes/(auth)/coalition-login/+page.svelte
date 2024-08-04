@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import axios from 'axios';
-	import { authToken, isAuthenticated } from '$lib/api/api';
+	import { coalitionToken, isCoalitionAuthenticated } from '$lib/api/api';
 	let email = '';
 	let password = '';
 	let error = '';
@@ -15,15 +15,15 @@
 		error = '';
 
 		try {
-			const response = await axios.post('http://localhost:3000/auth/login', {
+			const response = await axios.post('http://localhost:3000/auth/coalition/login', {
 				email,
 				password
 			});
 
 			const { data } = response;
-			authToken.set(data.token);
-			isAuthenticated.set(true);
-			goto('/dashboard');
+			coalitionToken.set(data.token);
+			isCoalitionAuthenticated.set(true);
+			goto('/coalition');
 		} catch (err) {
 			if (err.response && err.response.data) {
 				error = err.response.data.message || 'Login failed';
@@ -37,9 +37,9 @@
 
 	onMount(() => {
 		// Redirect to dashboard if already authenticated
-		isAuthenticated.subscribe((value) => {
+		isCoalitionAuthenticated.subscribe((value) => {
 			if (value) {
-				goto('/dashboard');
+				goto('/coalition');
 			}
 		});
 	});
@@ -63,7 +63,7 @@
 				<h1
 					class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white"
 				>
-					Welcome Back
+					Welcome Coalition Login Form
 				</h1>
 				<form class="space-y-4 md:space-y-6" on:submit|preventDefault={handleLogin}>
 					<!-- method="POST" action="?/login" use:enhance -->
@@ -104,12 +104,6 @@
 						class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
 						>Sign in</button
 					>
-					<p class="text-sm font-light text-gray-500 dark:text-gray-400">
-						Don&apos;t have an account yet? <a
-							href="/register"
-							class="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</a
-						>
-					</p>
 				</form>
 			</div>
 		</div>

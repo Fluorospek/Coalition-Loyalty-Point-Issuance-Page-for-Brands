@@ -1,18 +1,21 @@
 <script>
+    import { writable } from 'svelte/store';
     import { onMount } from 'svelte';
     import axios from 'axios';
-    import { writable } from 'svelte/store';
     import { goto } from '$app/navigation'; // Use goto for navigation in SvelteKit
+    import { coalitionToken as coalitionAuthToken } from '$lib/api/api'; // Assume you have this store
 
-    let tokenDetails = null;
+    let tokenDetails = writable(null);
     let error = writable(null);
     let loading = writable(true);
 
-    // Fetch coalition token from a secure place
-    let coalitionToken = ''; // Set this to however you obtain the token
-
     // Fetch token details on component mount
     onMount(async () => {
+        let coalitionToken;
+        const unsubscribe = coalitionAuthToken.subscribe(value => {
+            coalitionToken = value;
+        });
+
         if (!coalitionToken) {
             // Redirect to coalition login if token is not available
             goto('/coalition-login');
@@ -21,7 +24,7 @@
 
         try {
             const response = await axios.get(
-                'https://coalition-loyalty-point-issuance-page.onrender.com/coalition/token/details',
+                'http://localhost:3000/coalition/token/details',
                 {
                     headers: {
                         'Authorization': `Bearer ${coalitionToken}`
@@ -29,14 +32,16 @@
                 }
             );
 
-            tokenDetails = response.data.data;
+            tokenDetails.set(response.data.data);
             error.set(null);
         } catch (err) {
-            tokenDetails = null;
+            tokenDetails.set(null);
             error.set('Failed to fetch token details.');
         } finally {
             loading.set(false);
         }
+
+        unsubscribe(); // Cleanup subscription
     });
 </script>
 
@@ -78,7 +83,7 @@
         <p class="loading">Loading...</p>
     {:else if $error}
         <p class="error">{$error}</p>
-    {:else if tokenDetails}
+    {:else if $tokenDetails}
         <table>
             <thead>
                 <tr>
@@ -89,9 +94,9 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{tokenDetails.brandTokenId}</td>
-                    <td>{tokenDetails.pointName}</td>
-                    <td>{tokenDetails.coalitionId}</td>
+                    <td>{$tokenDetails.brandTokenId}</td>
+                    <td>{$tokenDetails.pointName}</td>
+                    <td>{$tokenDetails.coalitionId}</td>
                 </tr>
             </tbody>
         </table>

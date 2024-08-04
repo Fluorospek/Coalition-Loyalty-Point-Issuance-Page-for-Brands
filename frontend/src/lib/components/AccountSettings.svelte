@@ -1,7 +1,7 @@
 <script>
 	import { createEventDispatcher, onMount } from 'svelte';
 	import axios from 'axios';
-	import { token, isAuthenticated } from '$lib/api/api';
+	import { authToken, isAuthenticated } from '$lib/api/api';
 	import { get } from 'svelte/store';
 
 	let brandData = null;
@@ -14,7 +14,7 @@
 		try {
 			const response = await axios.get('https://coalition-loyalty-point-issuance-page.onrender.com/brand/details', {
 				headers: {
-					Authorization: `Bearer ${get(token)}`
+					Authorization: `Bearer ${get(authToken)}`
 				}
 			});
 			if (response.status === 200) {
@@ -32,7 +32,7 @@
 		try {
 			const response = await axios.get('https://coalition-loyalty-point-issuance-page.onrender.com/user/profile', {
 				headers: {
-					Authorization: `Bearer ${get(token)}`
+					Authorization: `Bearer ${get(authToken)}`
 				}
 			});
 			if (response.status === 200) {
