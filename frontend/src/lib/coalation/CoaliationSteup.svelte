@@ -1,159 +1,130 @@
 <script>
-    import { writable } from 'svelte/store';
+    import { coalitionToken, isCoalitionAuthenticated } from '$lib/api/api'; // Correct the import statement if needed
+    import { goto } from '$app/navigation';
     import axios from 'axios';
-    import {coalitionToken as coalitionAuthToken, } from '$lib/api/api';
-    import { onDestroy } from 'svelte';
+    import { onMount } from 'svelte';
+    import { createEventDispatcher } from 'svelte';
 
+    let coalitionjwt = null;
     let coalitionName = '';
     let description = '';
-    let coalitionToken = '';
-    
-    // Error and success messages
-    let error = writable(null);
-    let success = writable(null);
+    let successMessage = '';
+    let errorMessage = '';
 
-    // Subscribe to the coalitionAuthToken store to get the token value
-    let unsubscribeToken;
-    onDestroy(() => {
-        if (unsubscribeToken) {
-            unsubscribeToken();
+    // Dispatch
+    const dispatch = createEventDispatcher();
+
+    // Subscribe to token store
+    coalitionToken.subscribe((value) => {
+        coalitionjwt = value;
+    });
+
+    let authenticated = false;
+
+    // Subscribe to isAuthenticated store
+    isCoalitionAuthenticated.subscribe((value) => {
+        authenticated = value;
+    });
+
+    onMount(() => {
+        if (!authenticated) {
+            goto('/coalition-login');
         }
     });
 
-    // Function to handle setup
-    async function setup() {
-        try {
-            // Fetch token from the store
-            let token;
-            const unsubscribe = coalitionAuthToken.subscribe(value => {
-                token = value;
-            });
-            unsubscribeToken = unsubscribe;
+    async function handleSubmit(event) {
+        event.preventDefault();
 
+        try {
             const response = await axios.post(
-                'http://localhost:3000/auth/coalition/setup',
-                { coalitionName, description },
+                'http://localhost:3000/coalition/setup',
+                {
+                    coalitionName,
+                    description
+                },
                 {
                     headers: {
-                        'Authorization': `Bearer ${token || coalitionToken}`
+                        Authorization: `Bearer ${coalitionjwt}`
                     }
                 }
             );
 
-            if (response.status === 200) {
-                success.set('Setup successful');
-                error.set(null);
-            } else {
-                throw new Error('Setup failed');
+            // Handle the successful response
+            console.log('Coalition setup successful:', response.data);
+
+            // Set success message
+            successMessage = 'Coalition setup successful!';
+            errorMessage = '';
+
+            // Optionally, redirect to the next page after a delay
+            setTimeout(() => {
+                goto('/coalition');
+            }, 2000); // Redirect after 2 seconds
+        } catch (error) {
+            // Handle errors
+            console.error('Error setting up coalition:', error);
+            errorMessage = 'Error setting up coalition. Please try again.';
+            successMessage = '';
+
+            if (error.response) {
+                if (error.response.status === 409) {
+                    // Handle conflict error
+                    errorMessage = 'Coalition already exists. Please try a different name.';
+                } else if (error.response.status === 401) {
+                    // If unauthorized, redirect to login
+                    goto('/coalition-login');
+                }
             }
-        } catch (err) {
-            success.set(null);
-            error.set(err.response ? err.response.data.message : err.message);
         }
     }
 </script>
 
-<style>
-    .form-container {
-        max-width: 400px;
-        margin: auto;
-        padding: 2rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-    }
-    .form-group {
-        margin-bottom: 1rem;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-    }
-    .form-group input,
-    .form-group textarea {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-    .form-group button {
-        width: 100%;
-        padding: 0.75rem;
-        border: none;
-        border-radius: 4px;
-        background-color: #007BFF;
-        color: white;
-        font-size: 1rem;
-    }
-    .form-group button:hover {
-        background-color: #0056b3;
-    }
-    .error, .success {
-        margin-top: 1rem;
-        color: white;
-        padding: 0.5rem;
-        border-radius: 4px;
-        text-align: center;
-    }
-    .error {
-        background-color: #d9534f;
-    }
-    .success {
-        background-color: #5cb85c;
-    }
-</style>
-
-<section class="bg-gray-50 dark:bg-gray-900">
-    <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto mt-4 md:pd-2 lg:py-0">
-        <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-            <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-                <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                    Setup Coalition
-                </h1>
-                <form class="space-y-4 md:space-y-6" on:submit|preventDefault={setup}>
-                    <div class="form-group">
-                        <label for="coalitionName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Coalition Name
-                        </label>
-                        <input
-                            type="text"
-                            name="coalitionName"
-                            id="coalitionName"
-                            bind:value={coalitionName}
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="Enter coalition name"
-                            required
-                        />
-                    </div>
-                    <div class="form-group">
-                        <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                            Description
-                        </label>
-                        <textarea
-                            name="description"
-                            id="description"
-                            bind:value={description}
-                            placeholder="Enter description"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            rows="4"
-                            required
-                        ></textarea>
-                    </div>
-                    <button
-                        type="submit"
-                        class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                    >
-                        Setup Coalition
-                    </button>
-                </form>
-                <p>Go for The Loyality Define in the BrandDashboard</p>
-                {#if $error}
-                    <div class="error">{$error}</div>
-                {/if}
-                {#if $success}
-                    <div class="success">{$success}</div>
-                {/if}
-            </div>
-        </div>
+<section class="bg-white dark:bg-gray-900">
+    <div class="py-6 px-4 mx-auto max-w-screen-md">
+        <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900 dark:text-white">
+            Set Up Your Coalition Profile
+        </h2>
+        {#if authenticated}
+            <form on:submit={handleSubmit} class="space-y-4">
+                <div>
+                    <label for="coalitionName" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                        Coalition Name
+                    </label>
+                    <input
+                        type="text"
+                        id="coalitionName"
+                        bind:value={coalitionName}
+                        class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light"
+                        placeholder="Your Coalition Name"
+                        required
+                    />
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400">
+                        Description
+                    </label>
+                    <textarea
+                        id="description"
+                        bind:value={description}
+                        rows="6"
+                        class="block resize-none p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg shadow-sm border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                        placeholder="Leave your coalition description"
+                    ></textarea>
+                </div>
+                <button
+                    type="submit"
+                    class="py-3 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                >
+                    Next
+                </button>
+            </form>
+            {#if successMessage}
+                <p class="mt-4 text-green-500">{successMessage}</p>
+            {/if}
+            {#if errorMessage}
+                <p class="mt-4 text-red-500">{errorMessage}</p>
+            {/if}
+        {/if}
+        <p class="text-yellow-500 text-xl">Go to the Loyalty Define Page After Creation of Coalition</p>
     </div>
 </section>

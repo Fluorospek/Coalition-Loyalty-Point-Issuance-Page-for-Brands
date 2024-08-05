@@ -4,7 +4,6 @@
     import { goto } from '$app/navigation';
 
     let authenticated = false;
-    let tokenValue = null;
 
     // Import new components
     import CoalitionSetup from '../../../lib/coalation/CoaliationSteup.svelte';
@@ -54,12 +53,8 @@
         isCoalitionAuthenticated.subscribe(value => {
             authenticated = value;
             if (!authenticated) {
-                goto('/login'); // Redirect if not authenticated
+                goto('/coalition-login'); // Redirect if not authenticated
             }
-        });
-
-        coalitionToken.subscribe(value => {
-            tokenValue = value;
         });
     });
 </script>

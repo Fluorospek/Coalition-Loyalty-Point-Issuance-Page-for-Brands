@@ -50,31 +50,39 @@
         max-width: 600px;
         margin: 0 auto;
         padding: 1rem;
+        background-color: #1a1a1a;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
+        color: #f0f0f0;
     }
 
     th, td {
         padding: 0.5rem;
         text-align: left;
-        border: 1px solid #ddd;
+        border: 1px solid #333;
     }
 
     th {
-        background-color: #f4f4f4;
+        background-color: #333;
+    }
+
+    td {
+        background-color: #2a2a2a;
     }
 
     .error {
-        color: red;
+        color: #ff4c4c;
         font-weight: bold;
     }
 
     .loading {
         font-style: italic;
-        color: gray;
+        color: #ccc;
     }
 </style>
 
