@@ -1,126 +1,197 @@
 <script>
 	import { onMount } from 'svelte';
 	import axios from 'axios';
-	import { authToken as jwtToken, isAuthenticated } from '$lib/api/api';
-	import { goto } from '$app/navigation';
-	import { createEventDispatcher } from 'svelte';
-
-	let jwt = null;
-	let authenticated = false;
-	let brandData = null;
-	let errorMessage = '';
+	import { authToken } from '$lib/api/api';
+	import { get } from 'svelte/store';
+    import { createEventDispatcher } from 'svelte'; 
     let dispatch = createEventDispatcher();
 	function handleDistribute() {
 		dispatch('distributePoints');
 	}
 	function handleTransactionBtn() {
 		dispatch('viewTransactions');
-	}
-	// Subscribe to token store
-	jwtToken.subscribe((value) => {
-		jwt = value;
-	});
+	} 
+	let issuedPointsData = [];
+	let errorMessage = null;
+	let loading = true;
 
-	// Subscribe to isAuthenticated store
-	isAuthenticated.subscribe((value) => {
-		authenticated = value;
-	});
-
-	onMount(() => {
-		if (!authenticated) {
-			goto('/login');
-		} else {
-			fetchBrandData();
-		}
-	});
-
-	async function fetchBrandData() {
+	async function fetchIssuedPoints() {
 		try {
-			const response = await axios.get('https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/manage', {
+			const response = await axios.get('http://localhost:3000/loyalty/manage', {
 				headers: {
-					Authorization: `Bearer ${jwt}`
+					Authorization: `Bearer ${get(authToken)}`
 				}
 			});
-			brandData = response.data.brand;
+			if (response.status === 200) {
+				issuedPointsData = response.data.issuedPoints;
+			} else {
+				throw new Error('Failed to fetch issued points');
+			}
 		} catch (error) {
-			console.error('Error fetching brand data:', error);
-			errorMessage = 'Error fetching brand data. Please try again.';
+			errorMessage = 'Error fetching issued points: ' + error.message;
 		}
+		loading = false;
 	}
+
+	onMount(() => {
+		fetchIssuedPoints();
+	});
 </script>
 
-<section class="bg-gray-900 text-white py-6 px-4 mx-auto max-w-screen-md">
-	<div>
-		<h2 class="mb-4 text-4xl tracking-tight font-extrabold text-center text-white">
-			Loyalty Point Management
+<section class="bg-white dark:bg-gray-900">
+	<div class="py-6 px-4 mx-auto max-w-screen-md">
+		<h2
+			class="mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900 dark:text-white"
+		>
+			Issued Points
 		</h2>
-		{#if authenticated}
-			{#if brandData}
-				<table class="w-full text-sm text-left text-blue-300">
-					<thead class="text-xs uppercase bg-gray-800 text-blue-400">
+		{#if loading}
+			<p class="text-center text-gray-700 dark:text-gray-300">Loading...</p>
+		{:else if errorMessage}
+			<p class="text-center text-red-500">{errorMessage}</p>
+		{:else}
+			<div class="overflow-x-auto shadow-md rounded-lg">
+				<table class="min-w-full bg-white dark:bg-gray-800">
+					<thead>
 						<tr>
-							<th scope="col" class="px-6 py-3">Attribute</th>
-							<th scope="col" class="px-6 py-3">Value</th>
+							<th
+								class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 dark:bg-gray-700 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+							>
+								Field
+							</th>
+							<th
+								class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 dark:bg-gray-700 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider"
+							>
+								Value
+							</th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr class="bg-gray-800 border-b border-gray-700">
-							<td class="px-6 py-4">Brand Name</td>
-							<td class="px-6 py-4">{brandData.brandName}</td>
-						</tr>
-						<tr class="bg-gray-800 border-b border-gray-700">
-							<td class="px-6 py-4">Point Name</td>
-							<td class="px-6 py-4">{brandData.BrandTokens.pointName}</td>
-						</tr>
-						<tr class="bg-gray-800 border-b border-gray-700">
-							<td class="px-6 py-4">Symbol</td>
-							<td class="px-6 py-4">{brandData.BrandTokens.symbol}</td>
-						</tr>
-						{#each brandData.BrandTokens.IssuedPoints as issuedPoint}
-							<tr class="bg-gray-800 border-b border-gray-700">
-								<td class="px-6 py-4">Issued Point ID</td>
-								<td class="px-6 py-4">{issuedPoint.issuedPointId}</td>
+						{#each issuedPointsData as point}
+							<tr class="hover:bg-gray-100 dark:hover:bg-gray-600">
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									Issued Point ID
+								</td>
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									{point.issuedPointId}
+								</td>
 							</tr>
-							<tr class="bg-gray-800 border-b border-gray-700">
-								<td class="px-6 py-4">Total Supply</td>
-								<td class="px-6 py-4">{issuedPoint.totalSupply}</td>
+							<tr class="hover:bg-gray-100 dark:hover:bg-gray-600">
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									Brand Token ID
+								</td>
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									{point.brandTokenId}
+								</td>
 							</tr>
-							<tr class="bg-gray-800 border-b border-gray-700">
-								<td class="px-6 py-4">Total Issued</td>
-								<td class="px-6 py-4">{issuedPoint.totalIssued}</td>
+							<tr class="hover:bg-gray-100 dark:hover:bg-gray-600">
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									Asset ID
+								</td>
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									{point.assetId}
+								</td>
 							</tr>
-							<tr class="bg-gray-800 border-b border-gray-700">
-								<td class="px-6 py-4">Transaction ID</td>
-								<td class="px-6 py-4 break-words">{issuedPoint.transactionId}</td>
+							<tr class="hover:bg-gray-100 dark:hover:bg-gray-600">
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									Transaction ID
+								</td>
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									{point.transactionId}
+								</td>
+							</tr>
+							<tr class="hover:bg-gray-100 dark:hover:bg-gray-600">
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									Total Supply
+								</td>
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									{point.totalSupply}
+								</td>
+							</tr>
+							<tr class="hover:bg-gray-100 dark:hover:bg-gray-600">
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									Total Issued
+								</td>
+								<td
+									class="px-5 py-5 border-b border-gray-200 dark:border-gray-600 bg-white dark:text-white dark:bg-gray-800 text-md"
+								>
+									{point.totalIssued}
+								</td>
 							</tr>
 						{/each}
 					</tbody>
 				</table>
-				<div class="mt-4">
-					<button
-						on:click={handleDistribute}
-						class="py-2 mr-4 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-					>
-						Distibute Points
-					</button>
-					<button
-						on:click={handleTransactionBtn}
-						class="py-2 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-					>
-						View Transactions
-					</button>
-				</div>
-			{:else if errorMessage}
-				<p class="text-red-500">{errorMessage}</p>
-			{/if}
-		{:else}
-			<p class="text-yellow-500 text-xl">You need to log in to view the brand data.</p>
+			</div>
 		{/if}
+		<div class="mt-4">
+			<button
+				on:click={handleDistribute}
+				class="py-2 mr-4 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+			>
+				Distibute Points
+			</button>
+			<button
+				on:click={handleTransactionBtn}
+				class="py-2 px-5 text-sm font-medium text-center text-white rounded-lg bg-primary-700 sm:w-fit hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+			>
+				View Transactions
+			</button>
+		</div>
 	</div>
 </section>
 
 <style>
-	.break-words {
-		word-break: break-word;
+	table {
+		border-collapse: collapse;
+		width: 100%;
+	}
+	th,
+	td {
+		padding: 12px;
+		text-align: left;
+	}
+	th {
+		background-color: #f2f2f2;
+	}
+	tr:nth-child(even) {
+		background-color: #f9f9f9;
+	}
+	tr:hover {
+		background-color: #f1f1f1;
+	}
+	.dark th {
+		background-color: #444;
+	}
+	.dark tr:nth-child(even) {
+		background-color: #555;
+	}
+	.dark tr:hover {
+		background-color: #666;
 	}
 </style>
+<!-- 
+
+-->
+<!-- -->

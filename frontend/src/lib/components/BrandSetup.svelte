@@ -7,6 +7,7 @@
 	import { createEventDispatcher } from 'svelte';
 
 	let jwt = null;
+	let coalitionId='';
 	let brandName = '';
 	let description = '';
 	let successMessage = '';
@@ -42,8 +43,9 @@
 
 		try {
 			const response = await axios.post(
-				'https://coalition-loyalty-point-issuance-page.onrender.com/brand/setup',
+				'http://localhost:3000/brand/setup',
 				{
+					coalitionId: Number(coalitionId),
 					brandName,
 					description
 				},
@@ -101,6 +103,22 @@
 		</h2>
 		{#if authenticated}
 			<form on:submit={handleSubmit} class="space-y-4">
+				<div>
+					<label
+						for="coalitionId"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+					>
+						Coalition Id
+					</label>
+					<input
+						type="Number"
+						id="coalitionId"
+						bind:value={coalitionId}
+						class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light"
+						placeholder="Your Brand Name"
+						required
+					/>
+				</div>
 				<div>
 					<label
 						for="brandName"

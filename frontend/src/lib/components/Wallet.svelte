@@ -40,7 +40,7 @@
 
 		try {
 			const response = await axios.post(
-				'https://coalition-loyalty-point-issuance-page.onrender.com/auth/neucron-login',
+				'http://localhost:3000/auth/neucron-login',
 				{
 					email: neucronEmail,
 					password: neucronPassword
