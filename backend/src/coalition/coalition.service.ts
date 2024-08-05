@@ -80,4 +80,26 @@ export class CoalitionService {
         }
         return {data:brandToken, statusCode:200};
     }
+
+    async brandDetails(userId:number){
+        const coalition=await this.details(userId);
+        const coalitionId=coalition.data.coalitionId;
+        const brands=await this.databaseService.brand.findMany({
+            select:{
+                brandId:true,
+                brandName:true,
+                brandRepId:true,
+                description:true,
+                otherDetails:true,
+                createdAt:true
+            },
+            where:{
+                coalitionId:coalitionId
+            },
+        });
+        if(!brands){
+            throw new NotFoundException('No Brands Found');
+        }
+        return {brands, statusCode:200};
+    }
 }
