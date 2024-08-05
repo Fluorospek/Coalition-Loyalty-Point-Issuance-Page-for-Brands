@@ -84,6 +84,7 @@ export class LoyaltyController {
   @ApiOperation({description:"Brand Representative can send Loyalty points to the recievers paymail",summary:"Distribute Loyalty Points"})
   async distribute(@Req() req,@Body() DistributeDto:DistributeDto){
     const userId=req.user.userId;
-    return await this.loyaltyService.distribute(userId,DistributeDto);
+    const email=req.user.email;
+    return await this.loyaltyService.distribute(userId,email,DistributeDto);
   }
 }
