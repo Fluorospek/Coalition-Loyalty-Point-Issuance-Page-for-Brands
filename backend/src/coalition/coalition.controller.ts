@@ -18,7 +18,7 @@ export class CoalitionController {
   @ApiBearerAuth()
   @Post('setup')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({description:"Admin sets up the Coalition",summary:"Coalition Setup"})
+  @ApiOperation({description:"Admin can set up the Coalition",summary:"Coalition Setup"})
   @Roles(UserRole.ADMIN)
   async setup(@Req() req, @Body() CoalitionDto:CoalitionDto){
     const userId=req.user.userId;
@@ -29,7 +29,7 @@ export class CoalitionController {
   @ApiBearerAuth()
   @Get('tokens')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({description:"Admin views issued tokens by all the brands",summary:"View Tokens"})
+  @ApiOperation({description:"Admin can view issued tokens by all the brands",summary:"View Tokens"})
   @Roles(UserRole.ADMIN)
   async tokens(@Req() req){
     const userId=req.user.userId;
@@ -39,7 +39,7 @@ export class CoalitionController {
   @ApiBearerAuth()
   @Get('details')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({description:"Admin views details of the coalition",summary:"Coalition Details"})
+  @ApiOperation({description:"Admin can view details of the coalition",summary:"Coalition Details"})
   @Roles(UserRole.ADMIN)
   async details(@Req() req){
     const userId=req.user.userId;
@@ -49,10 +49,20 @@ export class CoalitionController {
   @ApiBearerAuth()
   @Get('token/details')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({description:"Admin views details of the token",summary:"Token Details"})
+  @ApiOperation({description:"Admin can view details of the token",summary:"Token Details"})
   @Roles(UserRole.ADMIN)
   async tokenDetails(@Req() req){
     const userId=req.user.userId;
     return await this.coalitionService.tokenDetails(userId);
+  }
+
+  @ApiBearerAuth()
+  @Get('brand/details')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({description:"Admin can view details of the brand",summary:"Brand Details"})
+  @Roles(UserRole.ADMIN)
+  async brandDetails(@Req() req){
+    const userId=req.user.userId;
+    return await this.coalitionService.brandDetails(userId);
   }
 }
