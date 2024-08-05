@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { map, catchError, concatAll } from 'rxjs/operators';
+import { map, catchError, concatAll, last } from 'rxjs/operators';
 import { lastValueFrom } from 'rxjs';
 import { BrandService } from 'src/brand/brand.service';
 import { IssueDto } from './dto/issue.dto';
@@ -144,11 +144,11 @@ export class LoyaltyService {
         brandId: brandId,
       },
     });
-    const brandToken=await this.brandToken(userId);
-    const tokenDetails=brandToken.brandToken;
-    const pointName=tokenDetails.pointName;
-    const symbol=tokenDetails.symbol;
-    return { pointName,symbol,issuedPoints, statusCode: 200 };
+    const brandToken = await this.brandToken(userId);
+    const tokenDetails = brandToken.brandToken;
+    const pointName = tokenDetails.pointName;
+    const symbol = tokenDetails.symbol;
+    return { pointName, symbol, issuedPoints, statusCode: 200 };
   }
 
   // async issue(userId: number, email: string, IssueDto: IssueDto) {
@@ -290,45 +290,38 @@ export class LoyaltyService {
   //   // };
   // }
 
-  async distribute(userId: number, DistributeDto: DistributeDto) {
+  async distribute(
+    userId: number,
+    email: string,
+    DistributeDto: DistributeDto,
+  ) {
     const issuedPoints = await this.databaseservice.issuedPoints.findUnique({
       where: {
         issuedPointId: DistributeDto.issuedPointId,
       },
     });
+
     if (!issuedPoints) {
       throw new NotFoundException('Issued Points Not Found');
     }
     if (issuedPoints.totalSupply < DistributeDto.amount) {
       throw new NotFoundException('Insufficient Points');
     }
+
     const assetId = issuedPoints.assetId;
     const transactionId = issuedPoints.transactionId;
     console.log(assetId);
     console.log(transactionId);
-    // const bodyData = {
-    //   assetID: assetId,
-    //   amount: DistributeDto.amount,
-    //   destinationPaymail: DistributeDto.recipientAddress,
-    // };
-    console.log(DistributeDto.recipientAddress, DistributeDto.amount);
-    const bodyData = {
-      asset_id: assetId,
-      splitDestinations: [
-        {
-          address: DistributeDto.recipientAddress,
-          satoshis: DistributeDto.amount,
-        },
-      ],
-    };
+
     const headers = {
       'Content-Type': 'application/json',
       Authorization: DistributeDto.access_token,
       'User-Agent': 'axios/1.7.2',
     };
-    const holding = await lastValueFrom(
+
+    const walletList = await lastValueFrom(
       this.http
-        .get('https://dev.neucron.io/v1/asset/tokens/list', { headers })
+        .get('https://dev.neucron.io/v1/wallet/list', { headers })
         .pipe(map((res) => res.data))
         .pipe(
           catchError((err) => {
@@ -336,19 +329,51 @@ export class LoyaltyService {
           }),
         ),
     );
-    let holdingAddress;
-    for(const token of holding.data.tokens){
-      for (const utxo of token.utxos){
-        if(utxo.txid===transactionId){
-          holdingAddress=token.address;
-          break;
-        }
-      }
-    }
-    if(!holdingAddress){
+
+    const walletKey = Object.keys(walletList.data.Wallets).find(
+      (key) => walletList.data.Wallets[key].wallet_name === 'main',
+    );
+    const ownPaymail = walletKey
+      ? walletList.data.Wallets[walletKey].paymails[0]
+      : null;
+    console.log(
+      ownPaymail,
+      DistributeDto.recipientAddress,
+      DistributeDto.amount,
+    );
+
+    const bodyData = {
+      asset_id: assetId,
+      splitDestinations: [
+        {
+          address: DistributeDto.recipientAddress,
+          satoshis: DistributeDto.amount,
+        },
+        {
+          address: ownPaymail,
+          satoshis: issuedPoints.totalSupply - DistributeDto.amount,
+        },
+      ],
+    };
+    console.log(bodyData);
+
+    const walletAddresses = await lastValueFrom(
+      this.http
+        .get('https://dev.neucron.io/v1/wallet/address', { headers })
+        .pipe(map((res) => res.data))
+        .pipe(
+          catchError((err) => {
+            throw new NotFoundException(err);
+          }),
+        ),
+    );
+    console.log(walletAddresses);
+    const holdingAddress = walletAddresses.data.addresses[0];
+    if (!holdingAddress) {
       throw new NotFoundException('Holding Address Not Found');
     }
-    console.log(holdingAddress)
+    console.log(holdingAddress);
+
     const res = await lastValueFrom(
       this.http
         .post(
@@ -363,6 +388,22 @@ export class LoyaltyService {
           }),
         ),
     );
+    console.log(res);
+    console.log(res.data.splited_assets_details[1].AssetID);
+
+    const temp = await this.databaseservice.issuedPoints.update({
+      where: {
+        issuedPointId: DistributeDto.issuedPointId,
+      },
+      data: {
+        assetId: res.data.splited_assets_details[1].AssetID,
+        totalSupply: {
+          decrement: DistributeDto.amount,
+        },
+      },
+    });
+    console.log(temp);
+
     const result = await this.databaseservice.transactions.create({
       data: {
         IssuedPoints: {
@@ -377,25 +418,26 @@ export class LoyaltyService {
         transactionHash: 'string',
       },
     });
-    await this.databaseservice.issuedPoints.update({
-      where: {
-        issuedPointId: DistributeDto.issuedPointId,
-      },
-      data: {
-        totalSupply: {
-          decrement: DistributeDto.amount,
-        },
-      },
-    });
-    return { holdingAddress:holdingAddress, statusCode: 200 };
+    return { res, statusCode: 200 };
   }
 
   async transactions(userId: number) {
     const tokenDetails = await this.brandToken(userId);
     const brandTokenId = tokenDetails.brandToken.brandTokenId;
+    // const transactions = await this.databaseservice.issuedPoints.findMany({
+    //   where: { brandTokenId: brandTokenId },
+    //   include: {
+    //     Transactions: {
+    //       orderBy: {
+    //         date: 'desc',
+    //       },
+    //     },
+    //   },
+    // });
     const transactions = await this.databaseservice.issuedPoints.findMany({
       where: { brandTokenId: brandTokenId },
-      include: {
+      select: {
+        issuedPointId: true,
         Transactions: {
           orderBy: {
             date: 'desc',
@@ -403,6 +445,14 @@ export class LoyaltyService {
         },
       },
     });
+
+    // Extract the Transactions arrays from the results
+    const transactionsArray = transactions.map(
+      (transaction) => transaction.Transactions,
+    );
+
+    console.log(transactionsArray);
+
     return {
       pointName: tokenDetails.brandToken.pointName,
       symbol: tokenDetails.brandToken.symbol,
