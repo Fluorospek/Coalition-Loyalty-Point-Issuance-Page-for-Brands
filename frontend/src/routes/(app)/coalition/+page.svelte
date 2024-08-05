@@ -11,6 +11,7 @@
     import CoalitionTokenDetails from '../../../lib/coalation/coaliationtokensetails.svelte';
     import PopupModal from '../../../lib/components/PopupModal.svelte';
     import Loyalitydefine from '../../../lib/coalation/Loyalitydefine.svelte';
+    import CoaliationToken from '../../../lib/coalation/CoaliationToken.svelte';
     let mainContent = CoalitionSetup; // Default component
     let sidebarItems = [
         {
@@ -31,6 +32,10 @@
         {
             title: 'Coalition Token Details',
             component: CoalitionTokenDetails,
+            visible: true
+        },{
+            title: 'Coalition Token',
+            component: CoaliationToken,
             visible: true
         }
     ];
