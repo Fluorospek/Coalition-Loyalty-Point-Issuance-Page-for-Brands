@@ -25,24 +25,6 @@ export class BrandService {
     }
 
     async setup(userId:number, email:string, BrandDto:BrandDto){
-        // const brand=await this.findBrand(userId);
-        // if(brand){
-        //     throw new ConflictException('Brand Already Setup');
-        // }
-        // const res=await this.dataservice.brand.create({
-        //     data:{
-        //         brandName:BrandDto.brandName,
-        //         description:BrandDto.description,
-        //         otherDetails:BrandDto.otherDetails,
-        //         user:{
-        //             connect:{
-        //                 userId:userId,
-        //                 email:email
-        //             }
-        //         }
-        //     }
-        // })
-        // return {brandId:res.brandId, status: 200}
         const brand=await this.findBrand(userId);
         if(brand){
             throw new ConflictException('Brand Already Setup');
