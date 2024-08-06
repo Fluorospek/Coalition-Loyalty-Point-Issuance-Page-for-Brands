@@ -27,7 +27,7 @@ jobs:
           git fetch --all
           git checkout main
           git pull origin main
-          git merge origin/neucron-intgx
+          git merge origin/neucron-intgx --allow-unrelated-histories
           git push origin main
 
   deploy:
