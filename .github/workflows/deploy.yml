@@ -24,7 +24,6 @@ jobs:
 
       - name: merge neucron-intgx into main
         run: |
-          git switch main
           git merge --no-ff neucron-intgx
           git push origin main
 
