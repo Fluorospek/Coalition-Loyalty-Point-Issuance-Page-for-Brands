@@ -24,8 +24,10 @@ jobs:
 
       - name: merge neucron-intgx into main
         run: |
-          git switch main
-          git merge --no-ff neucron-intgx
+          git fetch --all
+          git checkout main
+          git pull origin main
+          git merge origin/neucron-intgx --allow-unrelated-histories
           git push origin main
 
   deploy:
