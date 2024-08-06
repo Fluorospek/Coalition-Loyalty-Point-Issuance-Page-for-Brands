@@ -9,6 +9,9 @@ on:
     branches:
       - main
 
+env:
+  MY_REPO: https://fluorospek:${{ secrets.GITHUB_TOKEN }}@github.com/Fluorospek/Coalition-Loyalty-Point-Issuance-Page-for-Brands.git
+
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -25,7 +28,7 @@ jobs:
       - name: merge neucron-intgx into main
         run: |
           git fetch --all
-          git checkout main
+          git switch main
           git pull origin main
           git merge origin/neucron-intgx --allow-unrelated-histories
           git push origin main
