@@ -15,7 +15,7 @@
         error = '';
 
         try {
-            const response = await fetch('http://localhost:3000/auth/coalition/register', {
+            const response = await fetch('https://coalition-loyalty-point-issuance-page.onrender.com/auth/coalition/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
