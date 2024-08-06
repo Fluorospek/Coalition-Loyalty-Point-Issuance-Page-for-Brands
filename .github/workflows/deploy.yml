@@ -1,0 +1,44 @@
+name: Merge and Deploy
+
+on:
+  push:
+    branches:
+      - neucron-intgx
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      - name: set up git
+        run: |
+          git config --global user.name 'Github Actions'
+          git config --global user.email 'actions@github.com'
+
+      - name: merge neucron-intgx into main
+        run: |
+          git fetch --all
+          git checkout main
+          git pull origin main
+          git merge origin/neucron-intgx --allow-unrelated-histories
+          git push origin main
+
+  deploy:
+    if: github.event.pull_request.merged==true || github.ref=='refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clear render build cache and deploy
+        run: |
+          curl -X POST \
+          -H "Authorization: Bearer ${{secrets.RENDER_API_KEY}}" \
+          -H "Content-Type: application/json" \
+          --data '{"clearCache":true}' \
+          https://api.render.com/v1/services/srv-cqgkb86ehbks738v3alg/deploys
