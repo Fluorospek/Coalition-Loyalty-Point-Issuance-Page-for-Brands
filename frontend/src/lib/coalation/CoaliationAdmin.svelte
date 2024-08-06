@@ -76,6 +76,11 @@
 </style>
 
 <div class="table-container">
+    <h2
+			class="mb-4 text-4xl tracking-tight font-extrabold text-center text-gray-900 dark:text-white"
+		>
+			Coalition Admin
+	</h2>
     {#if $loading}
         <p class="loading">Loading...</p>
     {:else if $error}

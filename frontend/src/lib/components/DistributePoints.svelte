@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import axios from 'axios';
 	import { authToken as jwtToken, isAuthenticated } from '$lib/api/api';
-	import { onMount} from 'svelte';
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
 	const dispatch = createEventDispatcher();
@@ -12,8 +12,9 @@
 	let recipientAddress = '';
 	let amount = 0;
 	let issuedPointId = 0;
-	let responseDetails = null;
+	let responseDetails = [];
 	let errorMessage = '';
+	let successMessage = '';
 
 	// Subscribe to token store
 	jwtToken.subscribe((value) => {
@@ -41,7 +42,7 @@
 		event.preventDefault();
 
 		try {
-			const response = await axios.post('https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/distribute', {
+			const response = await axios.post('http://localhost:3000/loyalty/distribute', {
 				access_token: accessToken,
 				recipientAddress: recipientAddress,
 				amount: amount,
@@ -52,11 +53,13 @@
 				}
 			});
 
-			responseDetails = response.data.res.data.details;
+			responseDetails = response.data.res.data.splited_assets_details || [];
 			errorMessage = '';
+			successMessage = 'Points distributed successfully!';
 		} catch (error) {
-			responseDetails = null;
+			responseDetails = [];
 			errorMessage = 'Error during distribution. Please check the inputs and try again.';
+			successMessage = '';
 			console.error('Error during distribution:', error);
 		}
 	}
@@ -69,19 +72,18 @@
 		</h2>
 		<form on:submit={handleSubmit} class="space-y-4">
 			<div>
-				<label for="paymail" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+				<label for="recipientAddress" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
 					Receiver's Address
 				</label>
 				<input
 					type="text"
-					id="paymail"
+					id="recipientAddress"
 					bind:value={recipientAddress}
 					class="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 dark:shadow-sm-light"
-					placeholder="Enter Receiver's Paymail"
+					placeholder="Enter Receiver's Address"
 					required
 				/>
 			</div>
-
 			<div>
 				<label for="accessToken" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
 					Access Token
@@ -121,7 +123,6 @@
 					required
 				/>
 			</div>
-
 			<div class="w-full relative pt-6">
 				<button
 					on:click={handleGoBack}
@@ -138,7 +139,7 @@
 				</button>
 			</div>
 		</form>
-		{#if responseDetails}
+		{#if responseDetails.length > 0}
 			<div class="mt-6 overflow-x-auto">
 				<table class="min-w-full bg-white dark:bg-gray-800">
 					<thead>
@@ -152,20 +153,25 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr>
-							<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{responseDetails.AssetID}</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{responseDetails.TxID}</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{responseDetails.DestPaymail}</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{responseDetails.AssetName}</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{responseDetails.Amount}</td>
-							<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{responseDetails['log-Status']}</td>
-						</tr>
+						{#each responseDetails as detail}
+							<tr>
+								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{detail.AssetID}</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{detail.TxID}</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{recipientAddress}</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{detail.AssetName}</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{detail.Amount}</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{detail['log-Status']}</td>
+							</tr>
+						{/each}
 					</tbody>
 				</table>
 			</div>
 		{/if}
 		{#if errorMessage}
 			<p class="mt-4 text-red-500">{errorMessage}</p>
+		{/if}
+		{#if successMessage}
+			<p class="mt-4 text-green-500">{successMessage}</p>
 		{/if}
 	</div>
 </section>
