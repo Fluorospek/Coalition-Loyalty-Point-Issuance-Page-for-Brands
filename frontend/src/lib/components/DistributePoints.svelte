@@ -42,7 +42,7 @@
 		event.preventDefault();
 
 		try {
-			const response = await axios.post('http://localhost:3000/loyalty/distribute', {
+			const response = await axios.post('https://coalition-loyalty-point-issuance-page.onrender.com/loyalty/distribute', {
 				access_token: accessToken,
 				recipientAddress: recipientAddress,
 				amount: amount,
