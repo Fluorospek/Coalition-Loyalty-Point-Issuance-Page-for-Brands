@@ -44,7 +44,7 @@
 <section class="bg-white dark:bg-gray-900">
 	<div class="py-6 px-4 mx-auto max-w-screen-md">
 		<h2 class="mb-4 text-3xl tracking-tight font-bold text-center text-gray-900 dark:text-white">
-			Brands and Issued Token
+			Issued Token
 		</h2>
 		{#if $loading}
 			<p>Loading...</p>
